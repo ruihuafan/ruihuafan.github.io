@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Your Name — Theoretical Physicist</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Personal website of Your Name, theoretical physicist.">
+  <style>
+    :root { --max: 880px; --fg: #0f172a; --muted: #475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; }
+    *{box-sizing:border-box} body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg);}
+    header{border-bottom:1px solid #e2e8f0;background:#fff;position:sticky;top:0;backdrop-filter:saturate(180%) blur(6px)}
+    nav{max-width:var(--max);margin:0 auto;display:flex;gap:18px;align-items:center;padding:12px 16px}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600} nav a:hover{color:var(--link)}
+    .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
+    h1,h2{line-height:1.2;margin:0 0 12px} h1{font-size:32px} h2{font-size:22px;margin-top:28px}
+    .lead{color:var(--muted);margin:8px 0 18px}
+    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:14px 0}
+    ul{padding-left:18px;margin:8px 0}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:780px){ .grid{grid-template-columns:2fr 1fr} }
+    footer{border-top:1px solid #e2e8f0;margin-top:40px}
+    .muted{color:var(--muted)} .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#e2e8f0;color:#334155;font-size:12px}
+    a{color:var(--link)} a:hover{text-decoration:underline}
+    .avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0}
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="#top" style="margin-right:auto">Your Name</a>
+      <a href="#research">Research</a>
+      <a href="#publications">Publications</a>
+      <a href="#teaching">Teaching</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main id="top" class="container">
+    <div class="grid">
+      <section>
+        <h1>Your Name</h1>
+        <p class="lead">Theoretical physicist. Interests: quantum many-body, open dynamics, tensor networks, quantum Hall.</p>
+        <div class="card">
+          <p><span class="pill">Affiliation</span> Department of Physics, Your University</p>
+          <p class="muted">123 Academic Way, City, ST</p>
+        </div>
+
+        <h2 id="research">Research</h2>
+        <p>I study quantum many-body systems, open and unitary dynamics, and isometric tensor network states (isoTNS), with connections to conformal field theory and fractional quantum Hall physics.</p>
+        <ul>
+          <li>Open vs unitary dynamics and representability</li>
+          <li>Conformal generators on the fuzzy sphere</li>
+          <li>Sequential unitary circuits ↔ local channels ↔ isoTNS</li>
+        </ul>
+
+        <h2 id="publications">Selected publications</h2>
+        <div class="card">
+          <p>See the full list on <a href="https://scholar.google.com/" target="_blank" rel="noopener">Google Scholar</a>.</p>
+          <ul>
+            <li>Author, <em>Title</em>, Journal (Year). <a href="#">arXiv</a></li>
+            <li>Author, <em>Title</em>, Journal (Year). <a href="#">arXiv</a></li>
+          </ul>
+        </div>
+
+        <h2 id="teaching">Teaching & notes</h2>
+        <ul>
+          <li>Course/Term — link to syllabus/notes</li>
+          <li>Seminar series — link to schedule</li>
+        </ul>
+      </section>
+
+      <aside>
+        <img class="avatar" src="assets/img/avatar.jpg" alt="Portrait of Your Name"
+             onerror="this.style.display='none'">
+        <div class="card">
+          <strong>Links</strong>
+          <ul>
+            <li><a href="https://scholar.google.com/citations?user=s8Vgp_UAAAAJ" target="_blank" rel="noopener">Google Scholar</a></li>
+            <li><a href="https://github.com/YOUR-GITHUB-USERNAME" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="mailto:you@university.edu">Email</a></li>
+            <li><a href="assets/CV.pdf" target="_blank" rel="noopener">CV (PDF)</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>News</strong>
+          <ul>
+            <li>[Oct 2025] Paper on isoTNS & open dynamics submitted.</li>
+            <li>[Sep 2025] Talk at XYZ workshop.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="container">
+      <p class="muted">© <span id="y"></span> Your Name</p>
+    </footer>
+  </main>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
