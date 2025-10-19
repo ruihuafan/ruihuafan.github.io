@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Miscellaneous — Edward Fan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Miscellaneous notes by Edward Fan.">
+  <style>
+    :root { --max: 880px; --fg: #0f172a; --muted: #475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; }
+    *{box-sizing:border-box}
+    body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg);}    
+    header{border-bottom:1px solid #e2e8f0;background:#fff;position:sticky;top:0;backdrop-filter:saturate(180%) blur(6px)}
+    nav{max-width:var(--max);margin:0 auto;display:flex;gap:18px;align-items:center;padding:12px 16px}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600}
+    nav a:hover{color:var(--link)}
+    .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
+    h1,h2{line-height:1.2;margin:0 0 12px}
+    h1{font-size:32px}
+    h2{font-size:22px;margin-top:28px}
+    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:14px 0}
+    ul{padding-left:18px;margin:8px 0}
+    footer{border-top:1px solid #e2e8f0;margin-top:40px;padding-top:12px}
+    .muted{color:var(--muted)}
+    a{color:var(--link)} a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" style="margin-right:auto">Edward Fan</a>
+      <a href="misc.html">Miscellaneous</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Miscellaneous</h1>
+    <p>There are probably tons of typos and mistakes in these notes. You are more than welcome to email me questions or comments. (<a href="mailto:ruihua_fan@berkeley.edu">ruihua_fan@berkeley.edu</a>)</p>
+
+    <h2>Notes from teaching</h2>
+    <p>I have TF several courses during my PhD. Here are some of my written notes.</p>
+    <div class="card">
+      <ul>
+        <li><a href="#">Statistical Mechanics and Thermodynamics</a></li>
+        <li><a href="#">Special Topics in condensed matter physics</a></li>
+      </ul>
+    </div>
+
+    <h2>Course notes</h2>
+    <p>Here are some of my notes taken from some courses that I have taken.</p>
+    <div class="card">
+      <ul>
+        <li><a href="#">(Add a note/link)</a></li>
+      </ul>
+    </div>
+
+    <h2>Random notes</h2>
+    <p>Here are just some random notes, that I think will be fun to share.</p>
+    <div class="card">
+      <ul>
+        <li><a href="#">(Add a note/link)</a></li>
+      </ul>
+    </div>
+
+    <footer class="container">
+      <p class="muted">© <span id="y"></span> Edward Fan</p>
+    </footer>
+  </main>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
