@@ -1,0 +1,56 @@
+title: Edward Fan
+description: Theoretical physicist
+url: https://<your-github-username>.github.io
+github_username: <your-github-username>
+
+# Use Minimal Mistakes via remote_theme
+theme: null
+remote_theme: mmistakes/minimal-mistakes
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-remote-theme
+  - jekyll-scholar
+
+# Show these pages in the top navbar
+header_pages:
+  - research.md
+  - publications.md
+  - teaching.md
+  - talks.md
+  - cv.md
+
+# Minimal Mistakes options
+minimal_mistakes_skin: default
+markdown: kramdown
+permalink: /:categories/:title/
+
+# Defaults so pages use a nice single-column layout
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: single
+      author_profile: false
+
+# jekyll-scholar settings
+scholar:
+  style: ieee
+  locale: en
+  source: _bibliography
+  bibliography: papers.bib
+  bibliography_template: bib
+
+# Social links (fill in what you use)
+author:
+  name   : "Edward Fan"
+  avatar : /assets/img/profile.jpg
+  links:
+    - label: "Google Scholar"
+      icon: "fas fa-graduation-cap"
+      url: "https://scholar.google.com/citations?user=s8Vgp_UAAAAJ&hl=en"
+    - label: "GitHub"
+      icon: "fab fa-github"
+      url: "https://github.com/<your-github-username>"
