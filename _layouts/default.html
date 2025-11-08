@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ page.title }} — {{ site.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <!-- MathJax (optional) -->
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']] } };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <nav class="container">
+      <a href="/index.html" style="margin-right:auto">{{ site.title }}</a>
+      <a href="/misc.html">Miscellaneous</a>
+      <a href="/notes/">Notes</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {{ content }}
+  </main>
+
+  <footer class="container" style="margin-top:40px">
+    © {{ site.time | date: "%Y" }} {{ site.title }}
+  </footer>
+</body>
+</html>
