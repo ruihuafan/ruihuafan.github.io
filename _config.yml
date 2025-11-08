@@ -1,0 +1,14 @@
+title: "Edward Fan"
+description: "Condensed matter theory"
+markdown: kramdown
+highlighter: rouge
+
+# Build options
+theme: minima  # (optional) or keep your own HTML/CSS
+plugins: []    # GitHub Pages supports a fixed set; empty is fine
+
+# Collections for notes
+collections:
+  notes:
+    output: true        # generate pages
+    permalink: /notes/:path/
