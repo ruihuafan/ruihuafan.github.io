@@ -25,3 +25,4 @@ Here are some of my notes taken from courses that I have taken.
 Here are just some random notes that I think will be fun to share.
 
 - [Random note 1](/notes/readings/test.md)
+- [2pt function](/notes/2pt_function.pdf)
