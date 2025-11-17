@@ -9,6 +9,9 @@ baseurl: ""   # user site → keep empty
 # Use kramdown for Markdown
 markdown: kramdown
 
+kramdown:
+  math_engine: mathjax
+
 # IMPORTANT: do NOT set a theme (minima, etc.), or it will override your CSS.
 # Just leave `theme` unset, or explicitly null:
 # theme: null
