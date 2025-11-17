@@ -10,10 +10,8 @@ baseurl: ""   # user site → keep empty
 markdown: kramdown
 
 kramdown:
-  input: GFM            # nice GitHub-flavored markdown
   math_engine: mathjax
   syntax_highlighter: rouge
-  parse_block_html: true
 
 # IMPORTANT: do NOT set a theme (minima, etc.), or it will override your CSS.
 # Just leave `theme` unset, or explicitly null:
