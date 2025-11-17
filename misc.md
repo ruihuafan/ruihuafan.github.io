@@ -24,9 +24,7 @@ Here are some of my notes taken from courses that I have taken.
 
 Here are just some random notes that I think will be fun to share.
 
-- [Random note 1]({{ '/notes/readings/test/' | relative_url }})
-- [Random note 2]({{ '/notes/readings/test.md' | relative_url }})
+
 - [Random note 3](/_notes/readings/test.md)
-- [Random note 4](/notes/readings/test/)
-- [2pt function](/notes/2pt_function/)
-- [2pt function 2](/notes/2pt_function.pdf)
+- [2pt function](/_notes/2pt_function/)
+- [2pt function 2](/_notes/2pt_function.pdf)
