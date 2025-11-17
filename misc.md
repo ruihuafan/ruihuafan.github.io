@@ -24,5 +24,4 @@ Here are some of my notes taken from courses that I have taken.
 
 Here are just some random notes that I think will be fun to share.
 
-- [Random note 1](notes/random_note1.md)
-- [Random note 2](notes/random_note2.md)
+- [Random note 1](/notes/readings/test.md)
