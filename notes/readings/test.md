@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: note
 title: Short-range entangled states
 tags: [reading]
 summary: Defects
@@ -8,13 +8,21 @@ permalink: /notes/readings/test/
 
 # Short-range entangled states
 
+
+## Introduction
+
 Here, we follow arXiv:1712.07950 to understand the relation between spatial defect and lower dimensional systems.
+
+## Definitions
+
 
 Since we are thinking in the context of classifying phases, we should first specify the meaning of equivalence relation, or physically, continuous deformation. A typical definition involves two types of operations:
 1. changing parameters of the Hamiltonian without closing the gap
 2. adding or stacking a trivial degrees of freedom
 
 Local defect is defined as a modification of the system that is localized in the neighborhood of some locus of non-zero co-dimension. Similar to the discussion of gapped phases, we can define continuous deformation for gapped defects and their equivalence relation, accordingly. In the following, we always assume an energy gap for all the objects we discuss.
+
+## Implications
 
 We compose defects by spatially bringing them together. The composition is generally non-commutative. The notion of composition of defects leads to the notion of invertible defect. 
 

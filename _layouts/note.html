@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ page.description | default: site.description }}">
+
+  <style>
+    :root { --max: 880px; --fg: #0f172a; --muted: #475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; }
+    *{box-sizing:border-box}
+    body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg);}    
+    header{border-bottom:1px solid #e2e8f0;background:#fff;position:sticky;top:0;backdrop-filter:saturate(180%) blur(6px)}
+    nav{max-width:var(--max);margin:0 auto;display:flex;gap:18px;align-items:center;padding:12px 16px}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600}
+    nav a:hover{color:var(--link)}
+    .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
+    h1,h2,h3{line-height:1.2;margin:0 0 12px}
+    h1{font-size:32px}
+    h2{font-size:22px;margin-top:28px}
+    h3{font-size:18px;margin-top:20px}
+    .lead{color:var(--muted);margin:8px 0 18px}
+    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:14px 0}
+    ul{padding-left:18px;margin:8px 0}
+    footer{border-top:1px solid #e2e8f0;margin-top:40px;padding-top:12px}
+    .muted{color:var(--muted)}
+    a{color:var(--link)} a:hover{text-decoration:underline}
+    .hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .avatar-lg{width:96px;height:96px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0}
+
+    /* Notes layout with side TOC */
+    .note-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .note-toc {
+      flex: 0 0 220px;
+      font-size: 0.9rem;
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow: auto;
+      padding-right: 8px;
+    }
+    .note-toc h2 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .note-toc ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    .note-toc li {
+      margin: 4px 0;
+    }
+    .note-toc li.toc-h3 {
+      margin-left: 12px;
+      font-size: 0.9em;
+    }
+    .note-toc a {
+      text-decoration: none;
+      color: var(--muted);
+    }
+    .note-toc a:hover {
+      color: var(--link);
+    }
+    .note-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    @media (max-width: 800px) {
+      .note-layout {
+        flex-direction: column;
+      }
+      .note-toc {
+        position: static;
+        max-height: none;
+        order: -1;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 12px;
+      }
+    }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true,
+        tags: 'ams',
+        macros: {
+          Tr: '\\operatorname{Tr}',
+          diag: '\\operatorname{diag}',
+          bbZ: '\\mathbb{Z}',
+          bbN: '\\mathbb{N}',
+          bbR: '\\mathbb{R}',
+          bbC: '\\mathbb{C}'
+        }
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+  </script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ '/' | relative_url }}#top" style="margin-right:auto">Welcome</a>
+      <a href="{{ '/misc/' | relative_url }}">Miscellaneous</a>
+    </nav>
+  </header>
+
+  <main id="top" class="container">
+    <div class="note-layout">
+      <aside class="note-toc">
+        <h2>Contents</h2>
+        <nav id="note-toc"></nav>
+      </aside>
+
+      <article class="note-content">
+        {{ content }}
+      </article>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      var content = document.querySelector('.note-content');
+      var tocContainer = document.getElementById('note-toc');
+      if (!content || !tocContainer) return;
+
+      // Grab headings from the note content
+      var headings = content.querySelectorAll('h2, h3');
+      if (!headings.length) {
+        // No headings → hide TOC
+        tocContainer.parentElement.style.display = 'none';
+        return;
+      }
+
+      var ul = document.createElement('ul');
+
+      headings.forEach(function(h) {
+        // Ensure each heading has an id (kramdown usually auto-adds, but just in case)
+        if (!h.id) {
+          h.id = h.textContent.trim().toLowerCase().replace(/[^\w]+/g, '-');
+        }
+
+        var li = document.createElement('li');
+        li.className = 'toc-' + h.tagName.toLowerCase();
+
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent;
+
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+
+      tocContainer.appendChild(ul);
+    })();
+
+    var y = document.getElementById('y');
+    if (y) { y.textContent = new Date().getFullYear(); }
+  </script>
+</body>
+</html>
