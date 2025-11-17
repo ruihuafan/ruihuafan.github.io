@@ -1,10 +1,7 @@
 ---
-layout: page
 title: Miscellaneous
-permalink: /misc.html
+permalink: /misc/
 ---
-
-# Miscellaneous
 
 There are probably tons of typos and mistakes in these notes. You are more than
 welcome to email me questions or comments.

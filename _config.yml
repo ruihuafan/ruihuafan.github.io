@@ -1,5 +1,3 @@
-# _config.yml
-
 title: "Ruihua Fan — Personal Website"
 description: "Personal website of Edward (Ruihua) Fan, condensed matter theory."
 email: "ruihua_fan@berkeley.edu"
@@ -8,19 +6,23 @@ email: "ruihua_fan@berkeley.edu"
 url: "https://ruihuafan.github.io"
 baseurl: ""   # user site → keep empty
 
-# Do NOT use a Jekyll theme. Your HTML/CSS control the style.
-# (Leaving 'theme' unset avoids GitHub's minima styles.)
-# theme: minima   # <-- make sure this line does NOT exist
-
+# Use kramdown for Markdown
 markdown: kramdown
 
-# Optional: things Jekyll shouldn't try to process
-exclude:
-  - README.md
-  - Gemfile
-  - Gemfile.lock
+# IMPORTANT: do NOT set a theme (minima, etc.), or it will override your CSS.
+# Just leave `theme` unset, or explicitly null:
+# theme: null
 
-# Optional: a simple permalink style for any future markdown posts/pages
+# Make all pages use the same custom layout with your inline CSS
+defaults:
+  - scope:
+      path: ""        # all files
+      type: "pages"   # only for pages (index.md, misc.md, etc.)
+    values:
+      layout: default
+
+# Optional: nice URLs like /misc/ instead of /misc.html
 permalink: /:title/
+
 
 
