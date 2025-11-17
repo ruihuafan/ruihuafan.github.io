@@ -1,14 +1,22 @@
-title: "Edward Fan"
-description: "Condensed matter theory"
+title: "Ruihua Fan"
+email: "ruihua_fan@berkeley.edu"
+description: >-
+  Personal website of Ruihua Fan, condensed matter theorist.
+
+url: "https://ruihuafan.github.io"
+baseurl: ""   # user site → leave empty
+
+# Use the default GitHub Pages theme "minima"
+theme: minima
+
+# Pages that appear in the top navigation bar
+header_pages:
+  - index.md
+  - misc.md
+
 markdown: kramdown
-highlighter: rouge
 
-# Build options
-theme: minima  # (optional) or keep your own HTML/CSS
-plugins: []    # GitHub Pages supports a fixed set; empty is fine
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
 
-# Collections for notes
-collections:
-  notes:
-    output: true        # generate pages
-    permalink: /notes/:path/
