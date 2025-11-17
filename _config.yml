@@ -11,7 +11,6 @@ markdown: kramdown
 
 kramdown:
   math_engine: mathjax
-  syntax_highlighter: rouge
 
 # IMPORTANT: do NOT set a theme (minima, etc.), or it will override your CSS.
 # Just leave `theme` unset, or explicitly null:
