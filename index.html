@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ruihua Fan — Personal Website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Personal website of Edward Fan, condensed matter theory.">
+  <style>
+    :root { --max: 880px; --fg: #0f172a; --muted: #475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; }
+    *{box-sizing:border-box}
+    body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg);}    
+    header{border-bottom:1px solid #e2e8f0;background:#fff;position:sticky;top:0;backdrop-filter:saturate(180%) blur(6px)}
+    nav{max-width:var(--max);margin:0 auto;display:flex;gap:18px;align-items:center;padding:12px 16px}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600}
+    nav a:hover{color:var(--link)}
+    .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
+    h1,h2{line-height:1.2;margin:0 0 12px}
+    h1{font-size:32px}
+    h2{font-size:22px;margin-top:28px}
+    .lead{color:var(--muted);margin:8px 0 18px}
+    .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:14px 0}
+    ul{padding-left:18px;margin:8px 0}
+    footer{border-top:1px solid #e2e8f0;margin-top:40px;padding-top:12px}
+    .muted{color:var(--muted)}
+    a{color:var(--link)} a:hover{text-decoration:underline}
+    .hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .avatar-lg{width:96px;height:96px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0}
+</style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="#top" style="margin-right:auto">Welcome</a>
+      <a href="misc.html">Miscellaneous</a>
+    </nav>
+  </header>
+
+  <main id="top" class="container">
+    <section>
+      <div class="hero">
+        <img class="avatar-lg" src="assets/img/photo.jpg" alt="Photo" onerror="this.style.display='none'">
+        <div>
+          <h1>Ruihua Fan</h1>
+          <p> Hello! I am a condensed matter theorist. You can find my papers on <a href="https://arxiv.org/a/0000-0003-0511-2581.html" target="_blank" rel="noopener">arXiv</a> 
+            or my <a href="https://scholar.google.com/citations?user=s8Vgp_UAAAAJ" target="_blank" rel="noopener">Google Scholar</a>.</p>
+          <p> Email: ruihua_fan AT berkeley.edu</a></p>
+        </div>
+      </div>
+
+      <h2 id="research-experience">Research experience</h2>
+      <div class="card">
+        <ul>
+          <li>
+            <strong>University of California, Berkeley</strong><br>
+            Moore postdoctoral fellow, Aug 2023 — current
+          </li>
+          <li>
+            <strong>Harvard University</strong><br>
+            Postdoctoral fellow, June 2023 — July 2023
+          </li>
+        </ul>
+      </div>
+
+      <h2 id="education">Education</h2>
+      <div class="card">
+        <ul>
+          <li>
+            <strong>Harvard University</strong><br>
+            PhD in Physics, Aug 2017 — May 2023<br>
+            Advisor: <a href="https://www.physics.harvard.edu/people/facpages/vishwanath" target="_blank" rel="noopener">Prof. Ashvin Vishwanath</a>
+          </li>
+          <li>
+            <strong>Institute of Advance Study, Tsinghua University</strong><br>
+            Undergraduate student, Apr 2015 — Aug 2017<br>
+            Advisor: <a href="https://www.ias.tsinghua.edu.cn/en/info/1059/1170.htm" target="_blank" rel="noopener">Prof. Hui Zhai</a>
+          </li>
+          <li>
+            <strong>Peking University</strong><br>
+            B. Sc in Physics, Sep 2013 — July 2017
+          </li>
+        </ul>
+      </div>
+
+      
+    </section>
+
+    <!-- <footer class="container">
+      <p> </p>
+    </footer> -->
+  </main>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

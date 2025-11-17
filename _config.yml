@@ -1,22 +1,26 @@
-title: "Ruihua Fan"
+# _config.yml
+
+title: "Ruihua Fan — Personal Website"
+description: "Personal website of Edward (Ruihua) Fan, condensed matter theory."
 email: "ruihua_fan@berkeley.edu"
-description: >-
-  Personal website of Ruihua Fan, condensed matter theorist.
 
+# GitHub Pages settings
 url: "https://ruihuafan.github.io"
-baseurl: ""   # user site → leave empty
+baseurl: ""   # user site → keep empty
 
-# Use the default GitHub Pages theme "minima"
-theme: minima
-
-# Pages that appear in the top navigation bar
-header_pages:
-  - index.md
-  - misc.md
+# Do NOT use a Jekyll theme. Your HTML/CSS control the style.
+# (Leaving 'theme' unset avoids GitHub's minima styles.)
+# theme: minima   # <-- make sure this line does NOT exist
 
 markdown: kramdown
 
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
+# Optional: things Jekyll shouldn't try to process
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+# Optional: a simple permalink style for any future markdown posts/pages
+permalink: /:title/
+
 
