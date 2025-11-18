@@ -5,7 +5,7 @@
   <title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{ page.description | default: site.description }}">
-  <style>
+    <style>
     :root { --max: 880px; --fg: #0f172a; --muted: #475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; }
     *{box-sizing:border-box}
     body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg);}    
@@ -14,24 +14,43 @@
     nav a{color:var(--muted);text-decoration:none;font-weight:600}
     nav a:hover{color:var(--link)}
     .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
-    h1,h2{line-height:1.2;margin:0 0 12px}
+    h1,h2,h3{line-height:1.2;margin:0 0 12px}
     h1{font-size:32px}
     h2{font-size:22px;margin-top:28px}
+    h3{font-size:18px;margin-top:20px}
     .lead{color:var(--muted);margin:8px 0 18px}
     .card{background:var(--card);border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:14px 0}
     ul{padding-left:18px;margin:8px 0}
     footer{border-top:1px solid #e2e8f0;margin-top:40px;padding-top:12px}
     .muted{color:var(--muted)}
-    a{color:var(--link)} a:hover{text-decoration:underline}
+    a{color:var(--link);}
+    a:hover{text-decoration:underline;}
+
     .hero{
-    display: flex;
-    flex-direction: row;    /* image left, text right */
-    align-items: flex-start;
-    gap: 20px;              /* space between photo and text */
-    flex-wrap: nowrap;      /* keep them on one line on wide screens */
+      display:flex;
+      flex-direction:row;     /* image left, text right */
+      align-items:flex-start;
+      gap:20px;               /* space between photo and text */
+      flex-wrap:nowrap;       /* keep them on one line on wide screens */
     }
-    .avatar-lg{width:200px;height:240px;border-radius:0%;object-fit:cover;border:1px solid #e2e8f0}
+
+    .avatar-lg{
+      width:200px;
+      height:240px;
+      border-radius:0;        /* square-ish photo */
+      object-fit:cover;
+      border:1px solid #e2e8f0;
+    }
+
+    @media (max-width: 640px) {
+      .hero{
+        flex-direction:column;
+        align-items:flex-start;
+        flex-wrap:nowrap;
+      }
+    }
   </style>
+
 
   <script>
     window.MathJax = {
