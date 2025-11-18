@@ -14,7 +14,7 @@ I would like to share some notes from (1) courses that I either took or taught d
 
 ### Special Topics in condensed matter physics
 
-- [Linear response](notes/course_notes/linear%20response.pdf)
+- [Linear response](notes/course_notes/linear_response.pdf)
 
 ## Random notes
 
