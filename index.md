@@ -11,7 +11,7 @@ title: Welcome
       Hello! I am a condensed matter theorist, currently a Moore postdoctoral fellow at UC Berkeley. 
     </p>
     <p>  
-      Recent interests: various topics related to quantum Hall states, and more abstractly, chiral states. 
+      I am interested in emergent phenomena in many-body systems and nature.
     </p>
     <p>  
       You can find my papers on
