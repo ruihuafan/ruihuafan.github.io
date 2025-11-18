@@ -8,7 +8,10 @@ title: Welcome
   <div>
     <h1>Ruihua Fan</h1>
     <p>
-      Hello! I am a condensed matter theorist. I am interested in emergent phenomena in many-body systems, nature and even the human social behaviors! I am recently working on various topics related to quantum Hall states, and more abstractly, chiral states. 
+      Hello! I am a condensed matter theorist, interested in emergent phenomena in many-body systems, nature and even the human social behaviors! 
+    </p>
+    <p>  
+      Recent interests: various topics related to quantum Hall states, and more abstractly, chiral states. 
     </p>
     <p>  
       You can find my papers on
