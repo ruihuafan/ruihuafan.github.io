@@ -29,6 +29,7 @@ Conformal field theories, another much larger class of solvable theories, can be
 
 - [Driven oscillator and Rep of Virasoro can meet at Hill's eqn](/notes/CFTs/hill_eqn_coadjoint_orbit.pdf)
 - [Notes for a journal club](/notes/CFTs/CFTNote2018.pdf)
+- [Coulomb gas formalism](/notes/CFTs/coulomb_gas.pdf)
 - [Global quench in CFTs](/notes/CFTs/global_quench.pdf)
 - [Spectral form factor of CFTs](/notes/CFTs/SFF_CFT.pdf)
 - [CFT approach to bipartite entanglement of gapped states](/notes/CFTs/TopoEntanglementCFT.pdf)

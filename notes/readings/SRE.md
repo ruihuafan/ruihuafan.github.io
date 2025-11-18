@@ -3,7 +3,7 @@ layout: mknote
 title: Short-range entangled states
 tags: [reading]
 summary: Defects
-permalink: /notes/readings/test/
+permalink: /notes/readings/SRE/
 ---
 
 # Short-range entangled states
