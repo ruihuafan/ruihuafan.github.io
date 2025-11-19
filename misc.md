@@ -6,7 +6,9 @@ permalink: /misc/
 
 I have not decided what to put here. 
 
-Here is a random imcomplete note on short-range entangled state just as a place-holder
+An AI-generated webpage that summarizes some news today: [Global News](/apps/world_news.html)
+
+Here is a random imcomplete note on short-range entangled state
 
 - [Short-range entangled states](/notes/random_stuff/SRE/)
 
