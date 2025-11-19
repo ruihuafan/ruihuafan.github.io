@@ -1,3 +1,8 @@
+---
+title: Global News Brief
+# no layout: we are providing the full HTML document ourselves
+---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,7 +107,6 @@
                 "http://feeds.bbci.co.uk/news/business/rss.xml",     // BBC Business
                 "https://www.cnbc.com/id/100003114/device/rss/rss.html" // CNBC Top News
             ]
-            // Science section removed as requested
         };
 
         // Helper to extract image from different RSS formats
@@ -112,9 +116,6 @@
             
             // 2. Enclosure (NYT/Standard RSS often uses this)
             if (item.enclosure && item.enclosure.link) return item.enclosure.link;
-            
-            // 3. Media content (Sometimes parsed into enclosure or separate field)
-            // Note: rss2json sometimes puts media:content into enclosure.
             
             // 4. Try to find <img> tag in description
             const div = document.createElement('div');
@@ -128,8 +129,6 @@
         const NewsCard = ({ item }) => {
             const [imgSrc, setImgSrc] = useState(extractImage(item));
             const summary = summarizeText(item.description || item.content);
-
-            // Clean up source title (often "Title - Source")
             const cleanTitle = item.title.split(" - ")[0];
 
             return (
@@ -144,7 +143,6 @@
                         <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs px-2 py-1 m-2 rounded font-bold uppercase tracking-wider shadow-sm">
                             {new Date(item.pubDate).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
                         </div>
-                        {/* Source Badge (Optional, derived from feed properties if available, or implicit) */}
                     </div>
                     <div className="p-6 flex-1 flex flex-col">
                         <h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight group-hover:text-blue-600 transition-colors">
@@ -180,16 +178,15 @@
             const fetchNews = async (cat) => {
                 setLoading(true);
                 setError(null);
-                setNews([]); // Clear previous news immediately
+                setNews([]);
 
                 try {
                     const feedUrls = FEEDS[cat];
                     
-                    // Fetch all feeds for this category in parallel
                     const feedPromises = feedUrls.map(url => 
                         fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
                             .then(res => res.json())
-                            .catch(err => ({ status: 'error' })) // Catch individual feed errors
+                            .catch(() => ({ status: 'error' }))
                     );
 
                     const results = await Promise.all(feedPromises);
@@ -206,10 +203,8 @@
                         throw new Error("No news items could be fetched.");
                     }
 
-                    // Sort by date (Newest first)
                     allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
-                    // Deduplicate by title (simple check)
                     const uniqueItems = [];
                     const seenTitles = new Set();
                     
@@ -221,7 +216,6 @@
                         }
                     }
 
-                    // Take top 6
                     setNews(uniqueItems.slice(0, 6));
 
                 } catch (err) {
@@ -236,18 +230,18 @@
                 fetchNews(category);
             }, [category]);
 
-            // Lucide icons injection
             useEffect(() => {
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
             }, [loading, news]);
 
-            const dateToday = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const dateToday = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
 
             return (
                 <div className="min-h-screen pb-12 flex flex-col">
-                    {/* Welcome / Back Home Header */}
                     <div className="bg-slate-900 text-white">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center">
                             <a href="https://ruihuafan.github.io" className="text-sm font-medium hover:text-blue-400 flex items-center gap-2 transition-colors">
@@ -257,7 +251,6 @@
                         </div>
                     </div>
 
-                    {/* Header */}
                     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-20">
@@ -271,7 +264,6 @@
                                     </div>
                                 </div>
                                 
-                                {/* Desktop Nav */}
                                 <nav className="hidden md:flex space-x-1 bg-gray-100 p-1 rounded-lg">
                                     {Object.keys(FEEDS).map((cat) => (
                                         <button
@@ -291,7 +283,6 @@
                         </div>
                     </header>
 
-                    {/* Mobile Nav (Simple) */}
                     <div className="md:hidden bg-white border-b border-gray-100 p-2 overflow-x-auto">
                         <div className="flex space-x-2">
                             {Object.keys(FEEDS).map((cat) => (
@@ -310,7 +301,6 @@
                         </div>
                     </div>
 
-                    {/* Main Content */}
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
                         <div className="mb-8">
                             <h2 className="text-3xl font-bold text-gray-900">Top Stories: {category}</h2>
