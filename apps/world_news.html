@@ -59,65 +59,44 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        // Helper to clean html tags from text and grab first 2 sentences
         const summarizeText = (htmlContent) => {
             if (!htmlContent) return "No summary available.";
-            
-            // Remove HTML tags
             const div = document.createElement("div");
             div.innerHTML = htmlContent;
             let text = div.textContent || div.innerText || "";
-            
-            // Clean up extra whitespace
             text = text.replace(/\s+/g, " ").trim();
-            
-            // Split into sentences (naive approach looking for . ! ?)
             const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-            
-            // Take first two
             const summary = sentences.slice(0, 2).join(" ");
-            
-            // If too short, just take the first 200 chars
             if (summary.length < 50) return text.substring(0, 150) + "...";
-            
             return summary;
         };
 
-        // Fallback image if news has no image
         const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1000&auto=format&fit=crop";
 
-        // News Sources Configuration (Arrays of feeds for diversity)
         const FEEDS = {
             World: [
-                "https://feeds.bbci.co.uk/news/world/rss.xml",       // BBC World
-                "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", // NYT World
-                "https://www.theguardian.com/world/rss"              // The Guardian World
+                "https://feeds.bbci.co.uk/news/world/rss.xml",
+                "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+                "https://www.theguardian.com/world/rss"
             ],
             Tech: [
-                "http://feeds.bbci.co.uk/news/technology/rss.xml",   // BBC Tech
-                "https://techcrunch.com/feed/",                      // TechCrunch
-                "https://www.theverge.com/rss/index.xml"             // The Verge
+                "http://feeds.bbci.co.uk/news/technology/rss.xml",
+                "https://techcrunch.com/feed/",
+                "https://www.theverge.com/rss/index.xml"
             ],
             Business: [
-                "http://feeds.bbci.co.uk/news/business/rss.xml",     // BBC Business
-                "https://www.cnbc.com/id/100003114/device/rss/rss.html" // CNBC Top News
+                "http://feeds.bbci.co.uk/news/business/rss.xml",
+                "https://www.cnbc.com/id/100003114/device/rss/rss.html"
             ]
         };
 
-        // Helper to extract image from different RSS formats
         const extractImage = (item) => {
-            // 1. Explicit thumbnail field (BBC often uses this)
             if (item.thumbnail) return item.thumbnail;
-            
-            // 2. Enclosure (NYT/Standard RSS often uses this)
             if (item.enclosure && item.enclosure.link) return item.enclosure.link;
-            
-            // 4. Try to find <img> tag in description
             const div = document.createElement('div');
             div.innerHTML = item.description || item.content || '';
             const img = div.querySelector('img');
             if (img) return img.src;
-
             return PLACEHOLDER_IMG;
         };
 
@@ -177,17 +156,14 @@
 
                 try {
                     const feedUrls = FEEDS[cat];
-                    
                     const feedPromises = feedUrls.map(url => 
                         fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
                             .then(res => res.json())
                             .catch(() => ({ status: 'error' }))
                     );
-
                     const results = await Promise.all(feedPromises);
                     
                     let allItems = [];
-                    
                     results.forEach(data => {
                         if (data.status === 'ok' && data.items) {
                             allItems = [...allItems, ...data.items];
@@ -237,7 +213,6 @@
 
             return (
                 <div className="min-h-screen pb-12 flex flex-col">
-
                     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-20">
