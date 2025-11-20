@@ -36,8 +36,8 @@ collections:
 
 
 # Optional: nice URLs like /misc/ instead of /misc.html
-# permalink: /:title/
-permalink: pretty
+permalink: /:title/
+# permalink: pretty
 
 
 
