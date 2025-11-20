@@ -25,7 +25,7 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
     {% for note in subject_notes %}
       <li>
         <span style="color: #666; font-family: monospace;">
-          {{ note.date | date: "%Y-%m-%d" }}
+          {{ note.date | date: "%Y-%m" }}
         </span>
         &raquo;
         <a href="{{ note.url }}">{{ note.title }}</a>
