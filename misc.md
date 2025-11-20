@@ -19,7 +19,9 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
 {% for subject in subjects %}
   {% assign subject_notes = site.mknotes | where: "subject", subject | sort: "date" | reverse %}
   {% if subject_notes.size > 0 %}
-  ## {{ subject | capitalize }}
+  <p class="muted" style="font-weight:600; margin-top:24px; margin-bottom:8px;">
+    {{ subject | capitalize }}
+  </p>
 
   <ul>
     {% for note in subject_notes %}
