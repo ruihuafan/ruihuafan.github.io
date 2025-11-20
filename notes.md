@@ -23,7 +23,6 @@ Below are notes from courses that I took and taught during my PhD.
 # Notes of Field theories
 
 - [Analytical structure of two point functions](notes/QFT/2pt_function.pdf)
-
 - [Average null energy condition: an example](notes/QFT/ANEC.pdf)
 
 # Random notes

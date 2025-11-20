@@ -12,14 +12,14 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
 
 - [Yang's conjecture around 2018](/notes/random_stuff/yang_last_conjecture.pdf)
 
-# Random notes by subject
+# Random notes
 
 {% assign subjects = "physics,math,random" | split: "," %}
 
 {% for subject in subjects %}
   {% assign subject_notes = site.mknotes | where: "subject", subject | sort: "date" | reverse %}
   {% if subject_notes.size > 0 %}
-  <p class="muted" style="font-weight:600; margin-top:24px; margin-bottom:8px;">
+  <p class="muted" style="font-weight:700; margin-top:24px; margin-bottom:8px;">
     {{ subject | capitalize }}
   </p>
 
