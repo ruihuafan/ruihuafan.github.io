@@ -1,6 +1,6 @@
 ---
 title: Short-range entangled states
-date: 2025-6
+date: 2025-06-01
 tags: [physics, quantum]
 ---
 
