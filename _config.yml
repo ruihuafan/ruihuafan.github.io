@@ -23,6 +23,17 @@ defaults:
       type: "pages"   # only for pages (index.md, misc.md, etc.)
     values:
       layout: default
+  - scope:
+      path: ""
+      type: "mknotes"   # collection name (plural)
+    values:
+      layout: mknote
+
+collections:
+  mknotes:
+    output: true
+    permalink: /notes/:path/
+
 
 # Optional: nice URLs like /misc/ instead of /misc.html
 permalink: /:title/

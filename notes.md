@@ -22,18 +22,18 @@ Below are notes from courses that I took and taught during my PhD.
 
 # Notes of Field theories
 
-- [Analytical structure of two point functions](notes/2pt_function.pdf)
+- [Analytical structure of two point functions](notes/QFT/2pt_function.pdf)
 
-- [Average null energy condition: an example](notes/ANEC.pdf)
+- [Average null energy condition: an example](notes/QFT/ANEC.pdf)
 
 # Random notes
 
 Exact solutions are rare in many-body physics. They often reply on delicate mathematical structures. One object that keeps showing up in exact solutions is SL2 group. Here are some notes collecting related results.
 
-- [SL2 group and unitary representations](/notes/sl2R.pdf)
-- [SL2 = Harmonic oscillator](/notes/sl2_and_harmonic_oscillator.pdf)
-- [SL2 and AdS2](/notes/ads2.pdf)
-- [SL2 and SYK](/notes/coupled_SYK4.pdf)
+- [SL2 group and unitary representations](/notes/random_stuff/sl2R.pdf)
+- [SL2 = Harmonic oscillator](/notes/random_stuff/sl2_and_harmonic_oscillator.pdf)
+- [SL2 and AdS2](/notes/random_stuff/ads2.pdf)
+- [SL2 and SYK](/notes/random_stuff/coupled_SYK4.pdf)
 
 Conformal field theories, another much larger class of solvable theories, can be regarded as an upgraded version of the above SL2 story. Here are some notes on this topics.
 

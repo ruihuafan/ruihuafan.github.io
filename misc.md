@@ -8,6 +8,27 @@ I have not decided what to put here.
 
 An AI-generated webpage that summarizes some news today: [Global News](/apps/world_news.html)
 
+## Markdown notes
+
+<ul>
+  {% assign notes_sorted = site.mknotes | sort: "date" | reverse %}
+  {% for note in notes_sorted %}
+    <li>
+      <span style="color: #666; font-family: monospace;">
+        {{ note.date | date: "%Y-%m" }}
+      </span>
+      &raquo;
+      <a href="{{ note.url }}">{{ note.title }}</a>
+
+      {% if note.tags %}
+        <br>
+        <small>Tags: {{ note.tags | join: ", " }}</small>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+
 Here is a random imcomplete note on short-range entangled state
 
 - [Short-range entangled states](/notes/random_stuff/SRE/)

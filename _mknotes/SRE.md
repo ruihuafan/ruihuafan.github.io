@@ -1,9 +1,7 @@
 ---
-layout: mknote
 title: Short-range entangled states
-tags: [reading]
-summary: Defects
-permalink: /notes/random_stuff/SRE/
+date: 2025-6
+tags: [physics, quantum]
 ---
 
 # Short-range entangled states
