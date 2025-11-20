@@ -27,7 +27,7 @@ defaults:
       path: ""
       type: "mknotes"   # collection name (plural)
     values:
-      layout: default
+      layout: mknote
 
 collections:
   mknotes:
