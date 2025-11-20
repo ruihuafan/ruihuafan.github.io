@@ -12,6 +12,11 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
 
 - [Yang's conjecture around 2018](/notes/random_stuff/yang_last_conjecture.pdf)
 
+<div style="border: 1px solid red; padding: 10px;">
+  <strong>Debug Info:</strong><br>
+  Number of notes found: {{ site.mknotes.size }}
+</div>
+
 # Random notes by subject
 
 {% assign subjects = "physics,math,random" | split: "," %}
