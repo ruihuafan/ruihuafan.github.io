@@ -9,8 +9,8 @@ baseurl: ""   # user site → keep empty
 # Use kramdown for Markdown
 markdown: kramdown
 
-kramdown:
-  math_engine: mathjax
+# kramdown:
+  # math_engine: mathjax
 
 # IMPORTANT: do NOT set a theme (minima, etc.), or it will override your CSS.
 # Just leave `theme` unset, or explicitly null:
@@ -27,7 +27,7 @@ defaults:
       path: ""
       type: "mknotes"   # collection name (plural)
     values:
-      layout: mknote
+      layout: default
 
 collections:
   mknotes:

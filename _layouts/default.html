@@ -5,7 +5,7 @@
   <title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{ page.description | default: site.description }}">
-    <style>
+  <style>
     :root { --max: 880px; --fg: #0f172a; --muted: #475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; }
     *{box-sizing:border-box}
     body{margin:0;font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg);}    
@@ -51,17 +51,16 @@
     }
   </style>
 
-
+  {% if page.use_math %}
   <script>
     window.MathJax = {
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']],
         displayMath: [['$$', '$$'], ['\\[', '\\]']],
-        processEscapes: true,        // allows \$ to mean literal $
-        processEnvironments: true,   // \begin{equation} ... works outside $...$
-        tags: 'ams',                 // AMS-style numbering with \label / \eqref
+        processEscapes: true,
+        processEnvironments: true,
+        tags: 'ams',
         macros: {
-          // Common physics macros
           Tr: '\\operatorname{Tr}',
           diag: '\\operatorname{diag}',
           bbZ: '\\mathbb{Z}',
@@ -73,9 +72,11 @@
       svg: { fontCache: 'global' }
     };
   </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async
     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
   </script>
+  {% endif %}
 </head>
 <body>
   <header>
@@ -96,4 +97,5 @@
   </script>
 </body>
 </html>
+
 
