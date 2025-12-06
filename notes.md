@@ -44,5 +44,3 @@ Conformal field theories, another much larger class of solvable theories, can be
 - [CFT approach to bipartite entanglement of gapped states](/notes/CFTs/TopoEntanglementCFT.pdf)
 
 Statistical mechanics
-
-- [Ising model on a planar graph](/notes/random_stuff/ising_on_planar_graphs.pdf)
