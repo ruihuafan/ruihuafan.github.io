@@ -8,10 +8,10 @@ title: Welcome
   <div>
     <h1>Ruihua Fan</h1>
     <p>
-      Hello! I am a condensed matter theorist, currently a Moore postdoctoral fellow at UC Berkeley. 
+      Hello! I am a condensed matter theorist, currently a Moore fellow at UC Berkeley. 
     </p>
     <p>  
-      I am interested in emergent phenomena in many-body systems and nature.
+      I like emergent phenomena in many-body systems, and more generally, in nature.
     </p>
     <p>  
       You can find my papers on
@@ -30,7 +30,7 @@ title: Welcome
   <ul>
     <li>
       <strong>University of California, Berkeley</strong><br>
-      Moore postdoctoral fellow, Aug 2023 — current
+      Moore fellow, Aug 2023 — current
     </li>
     <li>
       <strong>Harvard University</strong><br>
