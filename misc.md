@@ -14,7 +14,7 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
 
 # Random notes
 
-{% assign subjects = "physics,math,random" | split: "," %}
+{% assign subjects = "physics,math,AI,random" | split: "," %}
 
 {% for subject in subjects %}
   {% assign subject_notes = site.mknotes | where: "subject", subject | sort: "date" | reverse %}
