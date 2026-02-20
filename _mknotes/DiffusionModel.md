@@ -2,7 +2,7 @@
 title: Diffusion model and mixed-state phases
 date: 2026-02-20
 subject: "physics"
-tags: [physics,AI]
+tags: [physics]
 ---
 
 # Introduction
