@@ -35,6 +35,7 @@ Exact solutions are rare in many-body physics. They often rely on delicate mathe
 - [Analytical structure of two point functions](/notes/QFT/2pt_function.pdf)
 - [Average null energy condition: an example](/notes/QFT/ANEC.pdf)
 - [Quantizing Chern-Simons theory](/notes/QFT/QuantizationChernSimons.pdf)
+- [Higher-form symmetry and some toy examples of its anomalies](/notes/QFT/HigherFormSym.pdf)
 
 ## Conformal Field Theory
 
