@@ -29,6 +29,7 @@ Exact solutions are rare in many-body physics. They often rely on delicate mathe
 - [SL2 = Harmonic oscillator](/notes/random_stuff/sl2_and_harmonic_oscillator.pdf)
 - [SL2 and AdS2](/notes/random_stuff/ads2.pdf)
 - [SL2 and SYK](/notes/random_stuff/coupled_SYK4.pdf)
+- [Particle in a hyperbolic space with magnetic field](/notes/random_stuff/add_magnetic_field_to_hyperbolic_space.pdf) 
 
 ## Conformal Field Theory (CFT)
 
@@ -58,8 +59,9 @@ CFT is a measure-zero subset of a larger class of theory, quantum field theory. 
 
 # Mathematics Notes
 
-- [Yang's conjecture around 2018](/notes/random_stuff/yang_last_conjecture.pdf) (When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture and would like a few students to verify it for him. Here is a MMA note stating that conjecture and some numerical tests. It might be related to Lee-Yang zeros.
-)
+- [Yang's conjecture around 2018](/notes/math/yang_last_conjecture.pdf) (When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture and would like a few students to verify it for him. Here is a MMA note stating that conjecture and some numerical tests. It might be related to Lee-Yang zeros.)
+- [Dirichlet theorem](/notes/math/2020chrismas.pdf)
+- [ABC of Teichmuller theory](/notes/math/TeichmullerABC.pdf)
 
 # Random thoughts
 
