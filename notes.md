@@ -5,15 +5,15 @@ toc: true
 toc_selector: "h1, h2"
 ---
 
-I tried to collect some notes here. Many are not really finished, and they probably contain tons of typos and mistakes. You are more than welcome to email me questions and comments.
+Most of my notes will show up as the appendices of my papers. Here are some ones that do not. Consequently, many of them are not really finished and contain tons of typos and mistakes. You are more than welcome to email me questions and comments.
 
-I have learned a lot from my friends and colleagues. Many notes you will find on this website are actually based on discussions with them or motivated by them.
+Many notes you will find on this website will be based on discussions with my friends and colleagues. So this is another chance for me to acknowledge them.
 
 # Physics Notes
 
 ## Special Topics in Condensed Matter Physics 
 
-Below are notes from a course that I taught during my PhD
+Below are notes from a course that I taught together with Ashvin as his TA during my PhD.
 
 - [Localized majorana zero modes](/notes/course_notes/1D_fermion_classification.pdf)
 - [Classification of 1D time-reversal symmetric fermion chain](/notes/course_notes/1D_TRI_fermion_classification.pdf)
@@ -30,14 +30,7 @@ Exact solutions are rare in many-body physics. They often rely on delicate mathe
 - [SL2 and AdS2](/notes/random_stuff/ads2.pdf)
 - [SL2 and SYK](/notes/random_stuff/coupled_SYK4.pdf)
 
-## Quantum Field Theory
-
-- [Analytical structure of two point functions](/notes/QFT/2pt_function.pdf)
-- [Average null energy condition: an example](/notes/QFT/ANEC.pdf)
-- [Quantizing Chern-Simons theory](/notes/QFT/QuantizationChernSimons.pdf)
-- [Higher-form symmetry and some toy examples of its anomalies](/notes/QFT/HigherFormSym.pdf)
-
-## Conformal Field Theory
+## Conformal Field Theory (CFT)
 
 Conformal field theories, another much larger class of solvable theories, can be regarded as an upgraded version of the above SL2 story. Here are some notes on these topics.
 
@@ -47,6 +40,15 @@ Conformal field theories, another much larger class of solvable theories, can be
 - [Global quench in CFTs](/notes/CFTs/global_quench.pdf)
 - [Spectral form factor of CFTs](/notes/CFTs/SFF_CFT.pdf)
 - [CFT approach to bipartite entanglement of gapped states](/notes/CFTs/TopoEntanglementCFT.pdf)
+
+## Quantum Field Theory (QFT)
+
+CFT is a measure-zero subset of a larger class of theory, quantum field theory. They are much harder to study in general.
+
+- [Analytical structure of two point functions](/notes/QFT/2pt_function.pdf)
+- [Average null energy condition: an example](/notes/QFT/ANEC.pdf)
+- [Quantizing Chern-Simons theory](/notes/QFT/QuantizationChernSimons.pdf)
+- [Higher-form symmetry and some toy examples of its anomalies](/notes/QFT/HigherFormSym.pdf)
 
 ## Statistical Mechanics and Thermodynamics
 
