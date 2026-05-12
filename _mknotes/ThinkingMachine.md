@@ -1,5 +1,5 @@
 ---
-title: What is intelligenceß
+title: What is intelligence
 date: 2026-03-29
 subject: "AI"
 tags: [AI]

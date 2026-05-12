@@ -20,7 +20,7 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
   {% assign subject_notes = site.mknotes | where: "subject", subject | sort: "date" | reverse %}
   {% if subject_notes.size > 0 %}
   <p class="muted" style="font-weight:700; margin-top:24px; margin-bottom:8px;">
-    {{ subject | capitalize }}
+    {% if subject == "AI" %}AI{% else %}{{ subject | capitalize }}{% endif %}
   </p>
 
   <ul>
@@ -36,5 +36,4 @@ When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture a
   </ul>
   {% endif %}
 {% endfor %}
-
 
