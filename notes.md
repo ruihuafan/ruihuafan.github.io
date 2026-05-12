@@ -11,9 +11,9 @@ Many notes you will find on this website will be based on discussions with my fr
 
 # Physics Notes
 
-## Special Topics in Condensed Matter Physics 
+## Condensed Matter Physics 
 
-Below are notes from a course that I taught together with Ashvin as his TA during my PhD.
+Below are notes from a course (Special topics in condensed matter physics) that I taught together with Ashvin as his TA during my PhD.
 
 - [Localized majorana zero modes](/notes/course_notes/1D_fermion_classification.pdf)
 - [Classification of 1D time-reversal symmetric fermion chain](/notes/course_notes/1D_TRI_fermion_classification.pdf)
