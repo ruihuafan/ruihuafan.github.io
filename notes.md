@@ -11,6 +11,9 @@ Many notes you will find on this website will be based on discussions with my fr
 
 # Physics
 
+<div class="notes-grid notes-grid-single" markdown="1">
+<section class="notes-group" markdown="1">
+
 ## Condensed Matter Physics 
 
 Below are notes from a course (Special topics in condensed matter physics) that I taught together with Ashvin as his TA during my PhD.
@@ -21,6 +24,9 @@ Below are notes from a course (Special topics in condensed matter physics) that 
 - [Kitaev's honeycomb model](/notes/course_notes/honeycomb_model.pdf)
 - [Linear response](/notes/course_notes/linear_response.pdf)
 
+</section>
+<section class="notes-group" markdown="1">
+
 ## SL2 in Physics
 
 Exact solutions are rare in many-body physics. They often rely on delicate mathematical structures. One object that keeps showing up in exact solutions is the SL2 group. Here are some notes collecting related results.
@@ -30,6 +36,9 @@ Exact solutions are rare in many-body physics. They often rely on delicate mathe
 - [SL2 and AdS2](/notes/random_stuff/ads2.pdf)
 - [SL2 and SYK](/notes/random_stuff/coupled_SYK4.pdf)
 - [Particle in a hyperbolic space with magnetic field](/notes/random_stuff/add_magnetic_field_to_hyperbolic_space.pdf) 
+
+</section>
+<section class="notes-group" markdown="1">
 
 ## Conformal Field Theory (CFT)
 
@@ -42,6 +51,9 @@ Conformal field theories, another much larger class of solvable theories, can be
 - [Spectral form factor of CFTs](/notes/CFTs/SFF_CFT.pdf)
 - [CFT approach to bipartite entanglement of gapped states](/notes/CFTs/TopoEntanglementCFT.pdf)
 
+</section>
+<section class="notes-group" markdown="1">
+
 ## Quantum Field Theory (QFT)
 
 CFT is a measure-zero subset of a larger class of theory, quantum field theory. They are much harder to study in general.
@@ -51,39 +63,52 @@ CFT is a measure-zero subset of a larger class of theory, quantum field theory. 
 - [Quantizing Chern-Simons theory](/notes/QFT/QuantizationChernSimons.pdf)
 - [Higher-form symmetry and some toy examples of its anomalies](/notes/QFT/HigherFormSym.pdf)
 
+</section>
+<section class="notes-group" markdown="1">
+
 ## Statistical Mechanics and Thermodynamics
 
 - [Probabilities](/notes/course_notes/probability.pdf)
 - [Free quantum gases](/notes/course_notes/free_quantum_gas.pdf)
 - [Ising model on planar graphs](/notes/random_stuff/ising_on_planar_graphs.pdf)
 
+</section>
+</div>
+
 # Mathematics
+
+<div class="notes-grid notes-grid-single" markdown="1">
+<section class="notes-group" markdown="1">
 
 - [Yang's conjecture around 2018](/notes/math/yang_last_conjecture.pdf) (When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture and would like a few students to verify it for him. Here is a MMA note stating that conjecture and some numerical tests. It might be related to Lee-Yang zeros.)
 - [Dirichlet theorem](/notes/math/2020chrismas.pdf)
 - [ABC of Teichmuller space and Fenchel-Nielsen coordinate](/notes/math/TeichmullerABC.pdf)
 
+</section>
+</div>
+
 # Random thoughts
 
+<div class="notes-grid notes-grid-single">
 {% assign subjects = "physics,math,AI,random" | split: "," %}
 
 {% for subject in subjects %}
   {% assign subject_notes = site.mknotes | where: "subject", subject | sort: "date" | reverse %}
   {% if subject_notes.size > 0 %}
-  <p class="muted" style="font-weight:700; margin-top:24px; margin-bottom:8px;">
-    {% if subject == "AI" %}AI{% else %}{{ subject | capitalize }}{% endif %}
-  </p>
+  <section class="notes-group">
+    <h2>{% if subject == "AI" %}AI{% else %}{{ subject | capitalize }}{% endif %}</h2>
 
-  <ul>
+    <ul class="mknotes-list">
     {% for note in subject_notes %}
       <li>
-        <span style="color: #666; font-family: monospace;">
+        <span class="mknotes-date">
           {{ note.date | date: "%Y-%m" }}
         </span>
-        &raquo;
         <a href="{{ note.url }}">{{ note.title }}</a>
       </li>
     {% endfor %}
-  </ul>
+    </ul>
+  </section>
   {% endif %}
 {% endfor %}
+</div>

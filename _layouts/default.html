@@ -97,6 +97,55 @@
       flex: 1;
       min-width: 0;
     }
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      align-items: start;
+      margin: 16px 0 28px;
+    }
+    .notes-grid-single {
+      grid-template-columns: 1fr;
+    }
+    .notes-group {
+      min-width: 0;
+      background: var(--card);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .notes-group h2 {
+      font-size: 19px;
+      margin-top: 0;
+    }
+    .notes-group p {
+      color: var(--muted);
+      margin: 0 0 12px;
+    }
+    .notes-group ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .notes-group li {
+      line-height: 1.45;
+      margin: 7px 0;
+    }
+    .mknotes-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .mknotes-list li {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 10px;
+      align-items: baseline;
+    }
+    .mknotes-date {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
 
     @media (max-width: 800px) {
       .note-layout {
@@ -109,6 +158,10 @@
         padding-bottom: 12px;
         border-bottom: 1px solid #e2e8f0;
         margin-bottom: 12px;
+      }
+      .mknotes-list li {
+        grid-template-columns: 1fr;
+        gap: 0;
       }
     }
   </style>
@@ -204,4 +257,3 @@
   </script>
 </body>
 </html>
-
