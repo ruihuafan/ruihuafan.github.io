@@ -9,7 +9,7 @@ Most of my notes will show up as the appendices of my papers. Here are some ones
 
 Many notes you will find on this website will be based on discussions with my friends and colleagues. So this is another chance for me to acknowledge them.
 
-# Physics Notes
+# Physics
 
 ## Condensed Matter Physics 
 
@@ -57,7 +57,7 @@ CFT is a measure-zero subset of a larger class of theory, quantum field theory. 
 - [Free quantum gases](/notes/course_notes/free_quantum_gas.pdf)
 - [Ising model on planar graphs](/notes/random_stuff/ising_on_planar_graphs.pdf)
 
-# Mathematics Notes
+# Mathematics
 
 - [Yang's conjecture around 2018](/notes/math/yang_last_conjecture.pdf) (When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture and would like a few students to verify it for him. Here is a MMA note stating that conjecture and some numerical tests. It might be related to Lee-Yang zeros.)
 - [Dirichlet theorem](/notes/math/2020chrismas.pdf)
