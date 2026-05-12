@@ -9,20 +9,17 @@ I tried to collect some notes here. Many are not really finished, and they proba
 
 I have learned a lot from my friends and colleagues. Many notes you will find on this website are actually based on discussions with them or motivated by them.
 
-# Course Notes
-
-Below are notes from courses that I took and taught during my PhD. 
-
-## Statistical Mechanics and Thermodynamics
-
-- [Probabilities](/notes/course_notes/probability.pdf)
-- [Free quantum gases](/notes/course_notes/free_quantum_gas.pdf)
-
-## Special Topics in Condensed Matter Physics
-
-- [Linear response](/notes/course_notes/linear_response.pdf)
-
 # Physics Notes
+
+## Special Topics in Condensed Matter Physics 
+
+Below are notes from a course that I taught during my PhD
+
+- [Localized majorana zero modes](/notes/course_notes/1D_fermion_classification.pdf)
+- [Classification of 1D time-reversal symmetric fermion chain](/notes/course_notes/1D_TRI_fermion_classification.pdf)
+- [Mean field is qualitatively correct with a rank-1 MPS but a wrong answer with a rank-2 MPS](/notes/course_notes/MPS_meanfield.pdf)
+- [Kitaev's honeycomb model](/notes/course_notes/honeycomb_model.pdf)
+- [Linear response](/notes/course_notes/linear_response.pdf)
 
 ## SL2 in Physics
 
@@ -37,6 +34,7 @@ Exact solutions are rare in many-body physics. They often rely on delicate mathe
 
 - [Analytical structure of two point functions](/notes/QFT/2pt_function.pdf)
 - [Average null energy condition: an example](/notes/QFT/ANEC.pdf)
+- [Quantizing Chern-Simons theory](/notes/QFT/QuantizationChernSimons.pdf)
 
 ## Conformal Field Theory
 
@@ -49,10 +47,16 @@ Conformal field theories, another much larger class of solvable theories, can be
 - [Spectral form factor of CFTs](/notes/CFTs/SFF_CFT.pdf)
 - [CFT approach to bipartite entanglement of gapped states](/notes/CFTs/TopoEntanglementCFT.pdf)
 
-# Miscellaneous Mathematical Notes
+## Statistical Mechanics and Thermodynamics
 
+- [Probabilities](/notes/course_notes/probability.pdf)
+- [Free quantum gases](/notes/course_notes/free_quantum_gas.pdf)
 - [Ising model on planar graphs](/notes/random_stuff/ising_on_planar_graphs.pdf)
-- [Yang's conjecture around 2018](/notes/random_stuff/yang_last_conjecture.pdf)
+
+# Mathematics Notes
+
+- [Yang's conjecture around 2018](/notes/random_stuff/yang_last_conjecture.pdf) (When I visited Tsinghua in 2018, Yang was working on a mathematical conjecture and would like a few students to verify it for him. Here is a MMA note stating that conjecture and some numerical tests. It might be related to Lee-Yang zeros.
+)
 
 # Random thoughts
 
