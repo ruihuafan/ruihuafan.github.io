@@ -35,11 +35,28 @@
     }
 
     .avatar-lg{
-      width:200px;
+      width:280px;
       height:240px;
       border-radius:0;        /* square-ish photo */
       object-fit:cover;
+      object-position:center top;
       border:1px solid #e2e8f0;
+    }
+    .avatar-pixel{
+      width:280px;
+      height:240px;
+      flex:0 0 auto;
+    }
+    .avatar-canvas{
+      display:none;
+      image-rendering:pixelated;
+      background:#f8fafc;
+    }
+    .avatar-pixel.is-ready .avatar-source{
+      display:none;
+    }
+    .avatar-pixel.is-ready .avatar-canvas{
+      display:block;
     }
 
     @media (max-width: 640px) {

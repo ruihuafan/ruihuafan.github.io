@@ -4,7 +4,10 @@ title: Welcome
 ---
 
 <div class="hero">
-  <img class="avatar-lg" src="assets/img/photo.jpg" alt="Photo" onerror="this.style.display='none'">
+  <div class="avatar-pixel" data-pixel-avatar>
+    <img class="avatar-lg avatar-source" src="{{ '/assets/img/photo.jpg' | relative_url }}" alt="Photo" onerror="this.closest('.avatar-pixel').style.display='none'">
+    <canvas class="avatar-lg avatar-canvas" width="280" height="240" role="img" aria-label="Cartoon portrait of Ruihua Fan with Half Dome"></canvas>
+  </div>
   <div>
     <h1>Ruihua Fan</h1>
     <p>
@@ -24,6 +27,8 @@ title: Welcome
     </p>
   </div>
 </div>
+
+<script src="{{ '/assets/js/pixel-avatar.js' | relative_url }}" defer></script>
 
 <h2 id="research-experience">Research experience</h2>
 <div class="card">
