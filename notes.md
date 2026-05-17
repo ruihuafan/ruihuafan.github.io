@@ -5,16 +5,14 @@ toc: true
 toc_selector: "h1, h2"
 ---
 
-Most of my notes will show up as the appendices of my papers. Here are some ones that do not. Consequently, many of them are not really finished and contain tons of typos and mistakes. You are more than welcome to email me questions and comments.
-
-Many notes you will find on this website will be based on discussions with my friends and colleagues. So this is another chance for me to acknowledge them.
+Many notes you will find on this website will be based on discussions with my friends and colleagues. So this is another chance for me to acknowledge them. Unfortunately, some notes are not really finished and contain tons of typos or mistakes. You are more than welcome to email me questions and comments.
 
 # Physics
 
 <div class="notes-grid notes-grid-single" markdown="1">
 <section class="notes-group" markdown="1">
 
-## Condensed Matter Physics 
+## Condensed Matter 
 
 Below are notes from a course (Special topics in condensed matter physics) that I taught together with Ashvin as his TA during my PhD.
 
@@ -40,9 +38,9 @@ Exact solutions are rare in many-body physics. They often rely on delicate mathe
 </section>
 <section class="notes-group" markdown="1">
 
-## Conformal Field Theory (CFT)
+## CFT
 
-Conformal field theories, another much larger class of solvable theories, can be regarded as an upgraded version of the above SL2 story. Here are some notes on these topics.
+Conformal field theory (CFT), another much larger class of solvable theories, can be regarded as an upgraded version of the above SL2 story. Here are some notes on these topics.
 
 - [Driven oscillator and Rep of Virasoro can meet at Hill's eqn](/notes/CFTs/hill_eqn_coadjoint_orbit.pdf)
 - [Notes for a journal club](/notes/CFTs/CFTNote2018.pdf)
@@ -54,9 +52,9 @@ Conformal field theories, another much larger class of solvable theories, can be
 </section>
 <section class="notes-group" markdown="1">
 
-## Quantum Field Theory (QFT)
+## QFT
 
-CFT is a measure-zero subset of a larger class of theory, quantum field theory. They are much harder to study in general.
+CFT is a small subset of a larger class of theory, quantum field theory (QFT). 
 
 - [Analytical structure of two point functions](/notes/QFT/2pt_function.pdf)
 - [Average null energy condition: an example](/notes/QFT/ANEC.pdf)
@@ -66,7 +64,7 @@ CFT is a measure-zero subset of a larger class of theory, quantum field theory. 
 </section>
 <section class="notes-group" markdown="1">
 
-## Statistical Mechanics and Thermodynamics
+## Stat-Mech and Thermodynamics
 
 - [Probabilities](/notes/course_notes/probability.pdf)
 - [Free quantum gases](/notes/course_notes/free_quantum_gas.pdf)
@@ -75,7 +73,7 @@ CFT is a measure-zero subset of a larger class of theory, quantum field theory. 
 </section>
 </div>
 
-# Mathematics
+# Math
 
 <div class="notes-grid notes-grid-single" markdown="1">
 <section class="notes-group" markdown="1">
