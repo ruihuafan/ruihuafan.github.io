@@ -11,10 +11,7 @@ title: Welcome
   <div>
     <h1>Ruihua Fan</h1>
     <p>
-      Hello! I am a condensed matter theorist, currently a Moore fellow at UC Berkeley. 
-    </p>
-    <p>  
-      I like emergent phenomena in many-body systems, and more generally, in nature.
+      Hello! I am a theorist, currently a Moore fellow at UC Berkeley. I like emergent phenomena in nature.
     </p>
     <p>  
       You can find my papers on
