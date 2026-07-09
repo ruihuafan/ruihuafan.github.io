@@ -3,7 +3,7 @@ title: Miscellaneous
 permalink: /misc/
 ---
 
-A collection of short notes and half-baked thoughts, often growing out of conversations with friends and colleagues. They are rough and frequently unfinished — questions and corrections are very welcome.
+A collection of short notes and half-baked thoughts.
 
 <div class="post-filter" id="post-filter" role="group" aria-label="Filter by subject"></div>
 
