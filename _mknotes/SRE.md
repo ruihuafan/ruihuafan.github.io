@@ -2,6 +2,7 @@
 title: Short-range entangled states
 date: 2025-06-01
 subject: "physics"
+summary: "How defects in invertible phases correspond to lower-dimensional systems, and why invertible states form a spectrum in the algebraic-topology sense."
 tags: [physics]
 ---
 

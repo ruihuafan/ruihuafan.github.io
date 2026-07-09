@@ -2,6 +2,7 @@
 title: Diffusion model and mixed-state phases
 date: 2026-02-20
 subject: "physics"
+summary: "Characterizing mixed-state phases through an analogy with the diffusion models used in generative machine learning."
 tags: [physics]
 ---
 

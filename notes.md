@@ -84,29 +84,3 @@ CFT is a small subset of a larger class of theory, quantum field theory (QFT).
 
 </section>
 </div>
-
-# Random thoughts
-
-<div class="notes-grid notes-grid-single">
-{% assign subjects = "physics,math,AI,random" | split: "," %}
-
-{% for subject in subjects %}
-  {% assign subject_notes = site.mknotes | where: "subject", subject | sort: "date" | reverse %}
-  {% if subject_notes.size > 0 %}
-  <section class="notes-group">
-    <h2>{% if subject == "AI" %}AI{% else %}{{ subject | capitalize }}{% endif %}</h2>
-
-    <ul class="mknotes-list">
-    {% for note in subject_notes %}
-      <li>
-        <span class="mknotes-date">
-          {{ note.date | date: "%Y-%m" }}
-        </span>
-        <a href="{{ note.url }}">{{ note.title }}</a>
-      </li>
-    {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
-{% endfor %}
-</div>

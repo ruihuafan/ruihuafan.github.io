@@ -178,6 +178,66 @@
       gap: 0;
     }
   }
+
+  /* Writing index: mknotes rendered as a filterable card feed */
+  .post-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 18px 0 20px;
+  }
+  .post-chip {
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: var(--muted);
+  }
+  .post-chip:hover { color: var(--link); border-color: #cbd5e1; }
+  .post-chip.is-active { background: var(--link); border-color: var(--link); color: #fff; }
+
+  .post-list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .post-card {
+    display: block;
+    background: var(--card);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .post-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 1px 3px rgba(15,23,42,.06);
+    text-decoration: none;
+  }
+  .post-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .post-tag { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: #eef2ff; color: #3730a3; }
+  .post-tag--physics { background: #eff6ff; color: #1e40af; }
+  .post-tag--ai      { background: #f5f3ff; color: #5b21b6; }
+  .post-tag--math    { background: #ecfdf5; color: #065f46; }
+  .post-tag--random  { background: #f1f5f9; color: #475569; }
+  .post-date {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: .82rem;
+    color: var(--muted);
+  }
+  .post-title { display: block; font-size: 17px; font-weight: 600; color: var(--fg); margin: 0 0 4px; }
+  .post-card:hover .post-title { color: var(--link); }
+  .post-summary { display: block; font-size: .95rem; color: var(--muted); line-height: 1.55; margin: 0; }
+
+  .experiments-note {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    color: var(--muted);
+    font-size: .95rem;
+  }
 </style>
 
 {% if include.mathjax %}

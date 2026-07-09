@@ -2,6 +2,7 @@
 title: What is intelligence
 date: 2026-03-29
 subject: "AI"
+summary: "Revisiting Turing's essay Computing Machinery and Intelligence — a humbling read, with a few thoughts on his arguments."
 tags: [AI]
 ---
 
