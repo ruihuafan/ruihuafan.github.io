@@ -37,14 +37,14 @@
   button.primary:hover:not(:disabled){color:#fff;opacity:.92}
   #status{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-size:.92rem;margin-bottom:12px;min-height:42px}
   /* game area breaks out of the 880px text column so board + brain share one screen */
-  #gameArea{max-width:1100px;margin:0 auto;padding:0 16px}
+  #gameArea{max-width:1100px;margin:0 auto;padding:20px 16px 0}
   #playRow{display:flex;gap:16px;align-items:flex-start;justify-content:center}
   #boardWrap{flex:1 1 640px;min-width:0;max-width:min(640px,calc(100vh - 235px))}
   #board{display:block;width:100%;border-radius:6px;touch-action:manipulation}
 
   #brainPanel{flex:0 0 372px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
   #brainPanel .bp-title{font-size:.88rem;font-weight:600;margin:0 0 2px}
-  #brainPanel .bp-sub{font-size:.74rem;color:var(--muted);margin:0 0 8px;line-height:1.45}
+  #brainPanel .bp-sub{font-size:.84rem;color:var(--muted);margin:0 0 8px;line-height:1.5}
   #brainMaps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .bmap{text-align:center;min-width:0}
   .bmap canvas{display:block;width:100%;height:auto;border-radius:4px;image-rendering:pixelated}
@@ -84,13 +84,6 @@
 </header>
 
 <main>
-  <div class="container" style="padding-bottom:0">
-  <h1>Go vs KataGo</h1>
-  <p class="sub">A real KataGo neural network running in your browser — no server, no search, just the raw policy.
-    Or set the opponent to Human and share the board with a friend.
-    New to the game? <a href="#rules">Read the rules tutorial below</a>.</p>
-  </div>
-
   <div id="gameArea">
   <div class="controls">
     <label>Board
@@ -117,7 +110,7 @@
     <button class="primary" id="new">New game</button>
     <button id="pass">Pass</button>
     <button id="undo">Undo</button>
-    <button id="brainbtn">Brain view</button>
+    <button id="brainbtn">KataGo's brain</button>
   </div>
 
   <div id="status">Loading neural network (~12 MB)&hellip;</div>
@@ -503,7 +496,7 @@ function toggleMask(k){
 }
 function updateBrainBtn(){
   document.getElementById('brainbtn').textContent=
-    maskSet.size?('Brain view · '+maskSet.size+' masked'):'Brain view';
+    maskSet.size?("KataGo's brain · "+maskSet.size+' masked'):"KataGo's brain";
 }
 
 function heatColor(v){ // 0..1 -> rgb, dark navy through blue to warm white
