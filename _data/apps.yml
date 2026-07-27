@@ -1,0 +1,26 @@
+# Cards on the /playground/ page. To add an app:
+#   1. Drop a self-contained file/folder in apps/  (e.g. apps/mygame.html → /apps/mygame.html,
+#      or apps/mygame/index.html → /apps/mygame/). No YAML front matter in the app file.
+#   2. Add an entry below.
+#
+# Fields:
+#   title        card heading (required)
+#   href         path to the app, e.g. /apps/mygame.html (required unless status: wip)
+#   description  one-line blurb
+#   tag          optional chip: web | game | tool
+#   status       set to "wip" to show a non-clickable "in progress" card (drop it to go live)
+
+- title: Global news
+  href: /apps/world_news.html
+  description: Five headlines each from Chinese, US, and European media, with three AI-written daily stories by Claude.
+  tag: web
+
+- title: Go vs KataGo
+  href: /apps/go/
+  description: Play Go against a real KataGo neural network, entirely in your browser — board sizes 7×7 to 19×19.
+  tag: game
+
+- title: Sandspiel
+  description: A falling-sand cellular-automaton sandbox — pixels of sand, water, fire, and plants.
+  tag: game
+  status: wip
