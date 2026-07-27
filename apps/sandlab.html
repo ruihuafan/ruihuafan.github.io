@@ -229,60 +229,41 @@
     <button class="close" id="btnCloseModal">close</button>
     <h2>sandlab ▓▒░</h2>
     <p>A falling-sand cellular automaton in one HTML file, inspired by Max Bittker's
-       <b>sandspiel</b> — but pared down to a living world. There are just <b>12 elements</b>,
-       and nearly all of them are there to feed one closed ecosystem. Draw with the mouse,
-       then watch it run. Pick any element on the right and its <b>tuning sliders</b> appear; press
-       <b>api rules</b> under them and <b>that element's behavior is plain JavaScript you can
-       rewrite live</b>.</p>
+       <b>sandspiel</b> — but pared down to a spatial food web. There are just <b>11 elements</b>.
+       Draw with the mouse, then watch them interact. Pick any element on the right and its
+       <b>tuning sliders</b> appear; press <b>api rules</b> under them and <b>that element's
+       behavior is plain JavaScript you can rewrite live</b>.</p>
     <div class="keys">
       <span>draw</span><span>left mouse / touch</span>
       <span>erase</span><span>right mouse drag, or the erase button</span>
       <span>undo</span><span>the undo button (last 12 strokes)</span>
     </div>
-    <p><b>The cast.</b> <b>Rock</b> is the world's edge and the outcrops on the shore.
-       It is the only thing here that neither burns nor erodes, which earns it three jobs: it stops
-       a wildfire dead, it shields the soil tucked against it from weathering, and the one-cell
-       crevice at the foot of a bluff counts as cover, so a grazer backed into it cannot be
-       pounced on. <b>Sand</b> is loose mineral ground. <b>Water</b> is the resource everything runs on, and a <b>Spring</b> renews it —
-       the one input to the whole system, this world's equivalent of sunlight. Exposed water also
-       evaporates into <b>Vapor</b>, which drifts up, rides the sky a while, then condenses back
-       as rain — so the weather itself is part of the water cycle. <b>Plants</b> are the
-       producers: they need a footing of sand or soil and water within reach, and their color shows
-       how hydrated they are. <b>Grazers</b> (teal) eat plants; <b>Predators</b> (pink) eat grazers;
-       both keep energy in <code>rb</code>, breed from a surplus, and starve without one. Whatever
-       dies becomes <b>Litter</b>, which rots into fertile <b>Soil</b> that speeds nearby growth and
-       holds a seed bank. <b>Sand</b> is what soil becomes once it is lost. <b>Fire</b> is the
-       disturbance that resets it all.</p>
-    <p><b>Soil is something the plants build and keep.</b> Only bare, exposed ground weathers back
-       to sand — living roots pin the soil they grow in, and buried soil is shielded by whatever
-       lies above it, so an abandoned slope sheds one thin sand crust and then stops. Plants also
-       work organic matter into the sand they stand in, turning it back into soil. So vegetated
-       land gains soil while stripped land loses it, and a bare dune that plants manage to colonise
-       will slowly green itself. Strip a hillside and you really will lose the topsoil.</p>
-    <p><b>The loop.</b> spring → water → plant → grazer → predator → (death) → litter → soil → plant.
-       And overhead: water → vapor → rain. Nothing is a dead end: matter keeps cycling, and the
-       chart under the canvas tracks the three living populations — watch grazers and predators
-       rise and fall in waves.</p>
+    <p><b>The cast.</b> <b>Rock</b> makes permanent walls, firebreaks and animal refuges.
+       <b>Ground</b> is the one loose mineral substrate: it falls, piles up and supports plants.
+       <b>Water</b> is the resource the food web runs on, and <b>Springs</b> renew it. Exposed water
+       evaporates into <b>Vapor</b>, which drifts upward and condenses as rain. <b>Plants</b> are
+       the producers: they need ground or existing growth beneath them and enough stored moisture.
+       <b>Grazers</b> (teal) eat plants; <b>Predators</b> (pink) eat grazers. Whatever dies becomes
+       short-lived <b>Detritus</b>. <b>Fire</b> is the disturbance that resets patches of the world.</p>
+    <p><b>The trophic chain.</b> spring → water → plant → grazer → predator. The chart under the
+       canvas tracks those three living populations. Resource surplus creates offspring; shortage
+       causes starvation, so population waves and trophic cascades come from the food chain itself
+       rather than from hidden meal counters.</p>
     <p><b>Fire is ecological, not just pretty.</b> How well a plant catches depends on how <i>dry</i>
        it is, so parched inland scrub goes up while lush riverbank growth barely burns — and water is
-       a firebreak (a quenched flame flashes to steam). Animals mostly flee the flames; the ones that
-       don't become litter. Everything burnt leaves ash, which rots into soil, so the land comes back
-       greener than it was.</p>
-    <p><b>Tuning it.</b> You do not have to write code to change how this world behaves. Pick any
-       living element and the <b>tuning</b> sliders appear beside its rule: a plant's growth rate,
-       thirst, crowding limit and flammability; a grazer's metabolism, appetite, breeding rate and
-       wariness; a predator's hunting skill, stalking range and how much better it does against weak
-       prey; how fast litter rots and what fraction returns as soil or water. Drag one and the next
-       tick already behaves differently — nothing is recompiled, so you can steer a running world.
-       The code editor is still there underneath for anything the sliders do not cover.</p>
-    <p><b>Things to try:</b> drag a predator's hunting skill up and watch the herds crash, then
-       collapse · light a fire in dry scrub far from water and watch it stop at the green
-       shoreline · burn a patch and wait for the richer regrowth · drop a predator into a fat herd
-       and watch them scatter · chase a herd toward a bluff and watch the crevice save them ·
-       wall a patch of scrub off with rock, then set the rest alight · crank up
-       evaporation and watch the lake move into the sky · erase a swathe of plants and watch the
-       exposed soil crust over into sand · paint plants onto bare sand and watch them build soil ·
-       edit Grazer so it eats Litter too (a scavenger).</p>
+       a firebreak (a quenched flame flashes to steam). Grazers mostly flee the flames; animals caught
+       in them become detritus. Burned patches can regrow from surviving wet edges.</p>
+    <p><b>Compact life controls.</b> A plant exposes its mean <b>ticks per sprout attempt</b>.
+       Grazers and predators each expose <b>movement speed</b> and the <b>energy needed for birth</b>.
+       Animals begin with 10 energy, spend it slowly, gain a species-specific amount from food, and
+       split their energy with an offspring once they have a surplus and enough local space.
+       Dragging a slider affects the next tick. The code editor remains available for rules outside
+       this deliberately small core.</p>
+    <p><b>Things to try:</b> shorten the plant sprout-attempt interval and watch the shoreline fill · lower
+       grazer birth energy and watch a boom overshoot its food · slow predators so refuges matter
+       more, then speed them up and look for a delayed trophic cascade · chase a herd toward a rock
+       crevice · wall off scrub with rock and burn outside it · raise evaporation and watch the lake
+       move into the sky.</p>
     <p>Engine notes: cells update bottom-up with an alternating scan direction and a clock bit so
        nothing moves twice per tick — the same trick sandspiel uses. This is a single static file
        with zero dependencies: save the page and it keeps working offline.</p>
@@ -296,8 +277,8 @@
     <div class="dbody">
           <h4>the model</h4>
           <p>The world is a grid. Every cell holds a <b>species id</b> plus two bytes:
-            <code>ra</code> (random at birth — used for color texture, or anything you like) and
-            <code>rb</code> (a free register, starts at 0 — commonly a life counter).
+            <code>ra</code> (random by default — used for color texture, or anything you like) and
+            <code>rb</code> (a free register, zero by default — commonly a life counter).
             Each tick, every non-empty cell runs its element's <code>update(api)</code> once.
             x grows right, <b>y grows down</b>. All offsets <code>(dx,dy)</code> are relative to the current cell.
             Reads off the grid edge return <code>ROCK</code>.</p>
@@ -337,7 +318,8 @@
              <code>color</code> "#rrggbb" · <code>vary</code> 0..1 color grain ·
              <code>liquid</code>/<code>gas</code>/<code>powder</code> flags · <code>density</code> number ·
              <code>flammable</code> 0..1 (chance per tick a neighboring flame ignites it) ·
-             <code>paintRb</code> starting <code>rb</code> for brush-painted cells (default 0) ·
+             <code>paintRa</code>/<code>paintRb</code> starting register values for brush-painted cells
+             (random <code>ra</code> and zero <code>rb</code> by default) ·
              <code>group</code> "water" or "life": which palette row the chip joins (anything else is matter) ·
              <code>tune</code> slider definitions (see above) ·
              <code>update(api)</code> behavior, optional ·
@@ -438,12 +420,18 @@ function doUndo() {
   if (u.n !== W) { UNDO.length = 0; return; }   // stale snapshots from another size
   S.set(u.S); RA.set(u.RA); RB.set(u.RB);
 }
-function setCell(x, y, id) {
-  if (x < 0 || x >= W || y < 0 || y >= H) return;
+function setCell(x, y, id, opts) {
+  if (x < 0 || x >= W || y < 0 || y >= H) return false;
   if (id >= EL.length || id < 0) id = 0;
   const i = y * W + x;
-  S[i] = id; RA[i] = rnd256();
-  RB[i] = (EL[id] && EL[id].def.paintRb ? EL[id].def.paintRb : 0) & 255;
+  const def = EL[id] && EL[id].def;
+  S[i] = id;
+  RA[i] = opts && opts.ra !== undefined ? opts.ra & 255
+        : def && def.paintRa !== undefined ? def.paintRa & 255 : rnd256();
+  RB[i] = opts && opts.rb !== undefined ? opts.rb & 255
+        : def && def.paintRb !== undefined ? def.paintRb & 255 : 0;
+  CL[i] = gen;
+  return true;
 }
 
 function tick() {
@@ -555,7 +543,7 @@ function validateDef(def, id) {
   if (typeof def.name !== 'string' || !def.name.trim()) throw new Error('def needs a non-empty "name" string');
   const rgb = hexRgb(def.color);
   if (!rgb) throw new Error('def needs a "color" like "#e2b25f"');
-  for (const k of ['vary', 'density', 'flammable', 'paintRb'])
+  for (const k of ['vary', 'density', 'flammable', 'paintRa', 'paintRb'])
     if (def[k] !== undefined && typeof def[k] !== 'number') throw new Error('"' + k + '" must be a number');
   if (def.update !== undefined && typeof def.update !== 'function') throw new Error('"update" must be a function');
   if (def.shade !== undefined && typeof def.shade !== 'function') throw new Error('"shade" must be a function');
@@ -731,7 +719,7 @@ function importRules(json) {
   return { ok: true, count: data.elements.length };
 }
 
-/* ---------- 5. built-in elements (id order matters: 0=Empty, 1=Wall) ---------- */
+/* ---------- 5. built-in elements (id order matters: 0=Empty, 1=Rock) ---------- */
 const BUILTIN = [
 
 /* Every element below is a plain object. Numbers listed in its `tune` block
@@ -760,15 +748,16 @@ const BUILTIN = [
   // Draw with it to carve basins that hold water, or ridges that block fire.
 }` },
 
-{ name: 'Sand', src:
+{ name: 'Ground', src:
 `{
-  name: "Sand",
-  color: "#dfab52",
-  vary: 0.16,
+  name: "Ground",
+  color: "#765632",
+  vary: 0.18,
   powder: true,
   density: 4,
   update(api) {
-    // fall straight down; sink through lighter liquids; else roll diagonally
+    // One mineral substrate for the minimal food web. It falls, piles up and
+    // sinks through lighter liquids; plants can root in it.
     const below = api.get(0, 1);
     if (below === EMPTY) return api.move(0, 1);
     if (api.isLiquid(below) && api.densityOf(below) < this.density && api.chance(0.55))
@@ -841,22 +830,18 @@ const BUILTIN = [
   color: "#46b558",
   vary: 0.22,
   group: "life",
-  paintRb: 35,   // seedlings from the brush start with a small water reserve
+  paintRb: 60,   // seedlings from the brush start with a modest water reserve
 
-  // --- sliders ---
-  growth: 0.06,     // chance of sprouting into a free neighbouring cell
-  thirst: 0.05,     // how fast stored moisture is burnt up
-  drought: 0.03,    // chance per tick that a bone-dry plant wilts
-  crowdLimit: 5,    // more plant neighbours than this and it dies back
-  burnDry: 0.45,    // how fiercely it burns once parched (Fire reads this)
-  enrich: 0.004,    // chance a healthy plant works sand below it into soil
+  // The one plant control: mean eligible ticks between sprout attempts.
+  // Hydration, rooting and fire response remain fixed habitat rules.
+  sproutEvery: 30,
+  burnDry: 0.45,
   tune: {
-    growth:     { min: 0, max: 0.30, step: 0.005, label: "growth rate" },
-    thirst:     { min: 0, max: 0.30, step: 0.005, label: "thirst" },
-    drought:    { min: 0, max: 0.20, step: 0.005, label: "drought death" },
-    crowdLimit: { min: 2, max: 8,    step: 1,     label: "crowding limit" },
-    burnDry:    { min: 0, max: 1,    step: 0.05,  label: "flammability" },
-    enrich:     { min: 0, max: 0.05, step: 0.002, label: "roots build soil" }
+    sproutEvery: {
+      min: 5, max: 150, step: 5,
+      label: "sprout interval",
+      help: "mean ticks between sprout attempts"
+    }
   },
 
   shade(ra, rb, frame, out) {
@@ -870,28 +855,13 @@ const BUILTIN = [
   },
 
   update(api) {
-    // rb = stored moisture. Plants must drink to grow: water is absorbed,
-    // piped through the colony, and spent on new growth. Without it they stop
-    // growing, fade to straw and wilt. They also need footing - sand, soil or
-    // another plant below - or they crumble.
-
-    const grip = id => id === SAND || id === PLANT || id === SOIL;
+    // rb = stored moisture. Plants absorb water and split it with offspring.
+    // Space supplies crowding automatically.
+    const grip = id => id === GROUND || id === PLANT;
     const rooted = grip(api.get(-1, 1)) || grip(api.get(0, 1)) || grip(api.get(1, 1));
-    if (!rooted && api.chance(0.5)) return api.set(0, 0, LITTER);
-
-    let crowd = 0;
-    for (let dy = -1; dy <= 1; dy++)
-      for (let dx = -1; dx <= 1; dx++)
-        if ((dx || dy) && api.get(dx, dy) === PLANT) crowd++;
-
-    // DEATHS - overcrowding, loneliness, thirst. All leave litter behind.
-    if (crowd > this.crowdLimit && api.chance(0.25)) return api.set(0, 0, LITTER);
-    if (crowd < 2 && api.chance(0.005)) return api.set(0, 0, LITTER);
-    if (api.rb === 0 && api.chance(this.drought)) return api.set(0, 0, LITTER);
-
-    // METABOLISM - staying alive costs moisture. Together with the vascular
-    // sharing below, this is what limits how far from water a plant can live.
-    if (api.rb > 0 && api.chance(this.thirst)) api.rb = api.rb - 1;
+    if (!rooted && api.chance(0.5)) return api.set(0, 0, DETRITUS);
+    if (api.rb === 0 && api.chance(0.03)) return api.set(0, 0, DETRITUS);
+    if (api.rb > 0 && api.chance(0.05)) api.rb = api.rb - 1;
 
     // DRINK - absorb a neighbouring water cell, if there is room to store it
     if (api.rb <= 135) {
@@ -902,43 +872,17 @@ const BUILTIN = [
       }
     }
 
-    // BUILD SOIL - the other half of erosion. A plant with moisture to spare
-    // works organic matter into the bare ground it stands in, turning sand
-    // into soil. Vegetation does not merely hold the soil, it makes it - so a
-    // colonised dune slowly greens itself, and burnt ground recovers.
-    if (api.rb > 40 && api.chance(this.enrich)) {
-      const ex = api.rand(3) - 1;
-      if (api.get(ex, 1) === SAND) api.set(ex, 1, SOIL);
-    }
-
-    // SHARE - vascular flow toward a drier neighbour
-    const sx = api.rand(3) - 1, sy = api.rand(3) - 1;
-    if ((sx || sy) && api.get(sx, sy) === PLANT) {
-      const theirs = api.getRb(sx, sy);
-      if (api.rb > theirs + 20) {
-        const give = (api.rb - theirs) >> 1;
-        api.set(sx, sy, PLANT, { ra: api.getRa(sx, sy), rb: theirs + give });
-        api.rb = api.rb - give;
-      }
-    }
-
-    // BIRTH - growth costs water and a seedling needs footing. Sprouting into
-    // water consumes it; sprouting into air spends half of my own moisture.
+    // BIRTH - one causal rate, filtered only by habitat. Sprouting into water
+    // consumes it; sprouting into air splits the parent's stored moisture.
+    if (!api.chance(1 / this.sproutEvery)) return;
     const bx = api.rand(3) - 1, by = api.rand(3) - 1;
     if (bx || by) {
       const spot = api.get(bx, by);
       const seated = grip(api.get(bx - 1, by + 1)) || grip(api.get(bx, by + 1)) || grip(api.get(bx + 1, by + 1));
       if (seated && (spot === WATER || (spot === EMPTY && api.rb >= 60))) {
-        let n = 0;
-        for (let dy = -1; dy <= 1; dy++)
-          for (let dx = -1; dx <= 1; dx++)
-            if ((dx || dy) && api.get(bx + dx, by + dy) === PLANT) n++;
-        const rich = api.get(bx - 1, by + 1) === SOIL || api.get(bx, by + 1) === SOIL || api.get(bx + 1, by + 1) === SOIL;
-        const b = rich ? 1.8 : 1;    // fertile soil speeds growth
         if (spot === WATER) {
-          if (n >= 2 && n <= 4 && api.chance(this.growth * 2.5 * b)) return api.set(bx, by, PLANT, { rb: 120 });
-        } else if ((n === 1 && api.chance(this.growth * 0.33 * b)) ||
-                   (n >= 2 && n <= 4 && api.chance(this.growth * b))) {
+          return api.set(bx, by, PLANT, { rb: 120 });
+        } else {
           const dowry = api.rb >> 1;
           api.rb = api.rb - dowry;
           return api.set(bx, by, PLANT, { rb: dowry });
@@ -948,34 +892,20 @@ const BUILTIN = [
   }
 }` },
 
-{ name: 'Litter', src:
+{ name: 'Detritus', src:
 `{
-  name: "Litter",
-  color: "#7a5230",
+  name: "Detritus",
+  color: "#8a5730",
   vary: 0.18,
   powder: true,
   density: 4,
   flammable: 0.18,
-  // Dead organic matter - what plants and animals leave behind. It settles,
-  // lingers as a leaf-litter layer, then rots: into nutrients (Soil), into the
-  // moisture the body held (Water, which drains back downhill and is what
-  // closes the water loop), or away to nothing.
-  rotRate: 0.28,   // how fast it breaks down
-  toSoil: 38,      // % of rotted litter that becomes soil
-  toWater: 22,     // % that returns as water
-  tune: {
-    rotRate: { min: 0.02, max: 1,   step: 0.02, label: "rot speed" },
-    toSoil:  { min: 0,    max: 100, step: 1,    label: "% to soil" },
-    toWater: { min: 0,    max: 100, step: 1,    label: "% to water" }
-  },
+  // A visible but deliberately simple trace of death and fire. Detritus can
+  // fall, sink and burn, then disappears; it is not a second food web.
   update(api) {
-    if (api.rb === 0) api.rb = 150 + api.rand(105);
-    if (api.chance(this.rotRate)) api.rb = api.rb - 1;
-    if (api.rb <= 1) {
-      const roll = api.rand(100);
-      return api.set(0, 0, roll < this.toSoil ? SOIL
-                         : roll < this.toSoil + this.toWater ? WATER : EMPTY);
-    }
+    if (api.rb === 0) api.rb = 150 + api.rand(76);
+    if (api.chance(0.5)) api.rb = api.rb - 1;
+    if (api.rb <= 1) return api.set(0, 0, EMPTY);
     const below = api.get(0, 1);
     if (below === EMPTY) return api.move(0, 1);
     if (api.isLiquid(below) && api.chance(0.5)) return api.swap(0, 1);
@@ -984,88 +914,35 @@ const BUILTIN = [
   }
 }` },
 
-{ name: 'Soil', src:
-`{
-  name: "Soil",
-  color: "#3c2c1a",
-  vary: 0.22,
-  powder: true,
-  density: 4,
-  // Rich earth from decomposition. Plants root in it like sand and grow faster
-  // beside it, and damp soil holds a seed bank that can sprout new plants - so
-  // producers recover after a wipeout.
-  //
-  // Soil is not permanent, but it is not doomed either. Only BARE, EXPOSED
-  // ground weathers back to sand: living roots pin the soil they grow in, and
-  // buried soil is shielded by whatever lies on top of it. So a stripped slope
-  // sheds one thin sand crust and then stops, while vegetated ground keeps its
-  // soil indefinitely - and Plant's roots actively rebuild it (see "enrich").
-  // Strip the plants off a hillside and you really will lose the topsoil.
-  germinate: 0.006,   // chance damp soil sprouts a plant
-  erosion: 0.0006,    // chance bare soil weathers to sand, per exposed face
-  tune: {
-    germinate: { min: 0, max: 0.05, step: 0.001,  label: "seed bank" },
-    erosion:   { min: 0, max: 0.01, step: 0.0002, label: "erosion (bare only)" }
-  },
-  update(api) {
-    const below = api.get(0, 1);
-    if (below === EMPTY) return api.move(0, 1);
-    if (api.isLiquid(below) && api.chance(0.2)) return api.swap(0, 1);
-    const dx = api.randDir();
-    if (api.get(dx, 1) === EMPTY && api.get(dx, 0) === EMPTY) return api.move(dx, 1);
-
-    // SEED BANK - open air above and water within reach: sprout a plant
-    if (api.get(0, -1) === EMPTY) {
-      let water = false;
-      for (let d = -1; d <= 1; d++)
-        if (api.get(d, 0) === WATER || api.get(d, 1) === WATER) { water = true; break; }
-      if (water && api.chance(this.germinate)) return api.set(0, -1, PLANT, { rb: 110 });
-    }
-
-    // EROSION - weathering scales with how many faces are open to air or
-    // water, and a single rooted plant stops it outright, so buried soil is
-    // permanent. Rolling at the maximum rate FIRST and only then surveying
-    // the neighbours keeps this off the hot path: the survey runs on well
-    // under 1% of ticks, but the odds work out identical to testing
-    // chance(erosion * open) directly.
-    if (api.chance(this.erosion * 8)) {
-      let open = 0, roots = 0;
-      for (let ny = -1; ny <= 1; ny++)
-        for (let nx = -1; nx <= 1; nx++) {
-          if (!nx && !ny) continue;
-          const n = api.get(nx, ny);
-          if (n === EMPTY || n === WATER) open++;
-          else if (n === PLANT) roots++;
-        }
-      if (roots === 0 && api.chance(open / 8)) return api.set(0, 0, SAND);
-    }
-  }
-}` },
-
 { name: 'Grazer', src:
 `{
   name: "Grazer",
   color: "#39d7c9",
   group: "life",
-  paintRb: 160,   // rb = stored energy (a full belly is 255)
+  paintRb: 10,    // rb = energy
 
-  // --- sliders ---
-  metabolism: 0.05,   // energy burnt per tick just staying alive
-  bite: 14,           // energy gained per mouthful
-  damage: 0.35,       // chance a mouthful destroys the plant cell
-  breedRate: 0.025,   // fecundity once well fed
-  fear: 0.7,          // chance of spotting danger and bolting
+  speed: 0.75,
+  birthEnergy: 20,
+  mealEnergy: 2,
+  energyCap: 30,
+  metabolism: 0.01,
+  birthEmpty: 2,
+  birthOccupied: 1,
   tune: {
-    metabolism: { min: 0, max: 0.40, step: 0.005, label: "metabolism" },
-    bite:       { min: 1, max: 60,   step: 1,     label: "energy per bite" },
-    damage:     { min: 0, max: 1,    step: 0.05,  label: "damage to plants" },
-    breedRate:  { min: 0, max: 0.20, step: 0.005, label: "breeding rate" },
-    fear:       { min: 0, max: 1,    step: 0.05,  label: "wariness" }
+    speed: {
+      min: 0.1, max: 1, step: 0.05,
+      label: "move speed",
+      help: "chance to move when a movement is available"
+    },
+    birthEnergy: {
+      min: 12, max: 28, step: 1,
+      label: "birth energy"
+    }
   },
 
   shade(ra, rb, frame, out) {
     // pale and bright when well fed, dim teal when starving
-    const t = rb / 200 > 1 ? 1 : rb / 200;
+    const t = rb / 20 > 1 ? 1 : rb / 20;
     const k = 0.4 + 0.6 * t;
     out[0] = 40 * k + 150 * t;
     out[1] = 215 * k;
@@ -1074,16 +951,43 @@ const BUILTIN = [
   },
 
   update(api) {
-    // A herbivore. It mostly TRIMS plants rather than destroying them, and
-    // never strips the last sparse sprigs - which is what keeps a pasture
-    // recoverable and stops the herd eating itself into oblivion.
+    // All animals share one causal state: rb is energy. Food adds to it,
+    // metabolism spends it, and a successful birth splits it.
+    const dirs = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+    const edible = (dx, dy) => {
+      if (api.get(dx, dy) !== PLANT) return false;
+      let clump = 0;
+      for (let y = -1; y <= 1; y++)
+        for (let x = -1; x <= 1; x++)
+          if ((x || y) && api.get(dx + x, dy + y) === PLANT) clump++;
+      return clump >= 3;
+    };
+    if (api.rb === 0) return api.set(0, 0, DETRITUS);
+    if (api.chance(this.metabolism)) {
+      api.rb = api.rb - 1;
+      if (api.rb === 0) return api.set(0, 0, DETRITUS);
+    }
 
-    if (api.rb <= 1) return api.set(0, 0, LITTER);          // starved
-    if (api.chance(this.metabolism)) api.rb = api.rb - 1;
+    // BIRTH - surplus energy is necessary but not sufficient. A calf needs
+    // two open neighboring cells around the parent, while one occupied cell
+    // keeps births attached to the landscape rather than happening in freefall.
+    if (api.rb > this.birthEnergy) {
+      const empty = [];
+      let occupied = 0;
+      for (const d of dirs) {
+        if (api.get(d[0], d[1]) === EMPTY) empty.push(d);
+        else occupied++;
+      }
+      if (empty.length >= this.birthEmpty && occupied >= this.birthOccupied) {
+        const d = empty[api.rand(empty.length)];
+        const childEnergy = api.rb >> 1;
+        api.rb = api.rb - childEnergy;
+        return api.set(d[0], d[1], GRAZER, { rb: childEnergy });
+      }
+    }
 
-    // FLEE - a landscape of fear: predators and fire nearby send it bolting,
-    // and a fleeing grazer will not stop to eat. Panic is not perfect, which
-    // is what keeps hunting viable.
+    // Fixed flight behavior preserves spatial predator-prey waves without
+    // turning fear into a second grazer control.
     let ax = 0, ay = 0, scared = false;
     for (let dy = -4; dy <= 4; dy++)
       for (let dx = -4; dx <= 4; dx++) {
@@ -1091,7 +995,7 @@ const BUILTIN = [
         const n = api.get(dx, dy);
         if (n === PREDATOR || n === FIRE) { ax += dx; ay += dy; scared = true; }
       }
-    if (scared && api.chance(this.fear)) {
+    if (scared && api.chance(0.7 * this.speed)) {
       const fx = ax > 0 ? -1 : ax < 0 ? 1 : api.randDir();
       const fy = ay > 0 ? -1 : ay < 0 ? 1 : 0;
       if (fy && api.get(fx, fy) === EMPTY) return api.move(fx, fy);
@@ -1101,40 +1005,24 @@ const BUILTIN = [
       if (api.get(-fx, 0) === EMPTY) return api.move(-fx, 0);
     }
 
-    // look around: how crowded is it, and is there anything to eat?
-    let crowd = 0, px = 0, py = 0, food = false;
-    for (let dy = -1; dy <= 1; dy++)
-      for (let dx = -1; dx <= 1; dx++) {
-        if (!dx && !dy) continue;
-        const n = api.get(dx, dy);
-        if (n === GRAZER) crowd++;
-        else if (n === PLANT) { px = dx; py = dy; food = true; }
-      }
-
-    // EAT - a mouthful always feeds it, but only a plant in a dense clump
-    // (4+ plant neighbours) can actually be destroyed
-    if (food && api.rb < 235 && api.chance(0.4)) {
-      api.rb = Math.min(255, api.rb + this.bite);
-      let clump = 0;
-      for (let dy = -1; dy <= 1; dy++)
-        for (let dx = -1; dx <= 1; dx++)
-          if ((dx || dy) && api.get(px + dx, py + dy) === PLANT) clump++;
-      if (clump >= 4 && api.chance(this.damage)) api.set(px, py, EMPTY);
-      return;
-    }
-
-    // BREED - well fed and not crowded; the calf takes half the energy
-    if (api.rb >= 200 && crowd <= 3 && api.chance(this.breedRate)) {
-      const rx = api.rand(3) - 1, ry = api.rand(3) - 1;
-      if ((rx || ry) && api.get(rx, ry) === EMPTY) {
-        const half = api.rb >> 1;
-        api.rb = api.rb - half;
-        return api.set(rx, ry, GRAZER, { rb: half });
+    // EAT - only dense growth is edible, leaving sparse plants as a seed
+    // refuge. A meal adds energy but never refills the whole reserve.
+    if (api.chance(0.12)) {
+      const start = api.rand(8);
+      for (let i = 0; i < 8; i++) {
+        const d = dirs[(start + i) & 7];
+        if (edible(d[0], d[1])) {
+          api.set(d[0], d[1], EMPTY);
+          api.rb = Math.min(this.energyCap, api.rb + this.mealEnergy);
+          return;
+        }
       }
     }
 
-    // MOVE - gravity first, then toward greenery, then wander
+    // MOVE - gravity first, then toward nearby greenery, then wander. Sparse
+    // plants remain inedible but still act as a general habitat cue.
     if (api.get(0, 1) === EMPTY) return api.move(0, 1);
+    if (!api.chance(this.speed)) return;
     let dir = api.randDir();
     if (api.get(2 * dir, 0) === PLANT || api.get(dir, -1) === PLANT) { /* that way */ }
     else if (api.get(-2 * dir, 0) === PLANT || api.get(-dir, -1) === PLANT) dir = -dir;
@@ -1149,28 +1037,29 @@ const BUILTIN = [
   name: "Predator",
   color: "#ff3d7f",
   group: "life",
-  paintRb: 120,   // rb = stored energy
+  paintRb: 10,    // rb = energy
 
-  // --- sliders ---
-  metabolism: 0.13,   // energy burnt per tick while hunting (grazers: 0.05)
-  hunt: 0.07,         // chance of catching a healthy, well-fed grazer
-  weakBonus: 0.28,    // extra chance against a starving one
-  meal: 85,           // energy gained from a kill
-  breedRate: 0.012,   // fecundity once gorged
-  sense: 7,           // how far it can spot prey (grazers panic at 4)
-  shelter: 0.5,       // how much one rock face counts toward a grazer's cover
+  speed: 1.0,
+  birthEnergy: 20,
+  mealEnergy: 3,
+  energyCap: 30,
+  metabolism: 0.005,
+  birthEmpty: 4,
+  birthOccupied: 1,
   tune: {
-    metabolism: { min: 0, max: 0.40, step: 0.005, label: "metabolism" },
-    hunt:       { min: 0, max: 0.60, step: 0.01,  label: "hunting skill" },
-    weakBonus:  { min: 0, max: 0.60, step: 0.01,  label: "vs weak prey" },
-    meal:       { min: 10, max: 160, step: 5,     label: "energy per kill" },
-    breedRate:  { min: 0, max: 0.10, step: 0.002, label: "breeding rate" },
-    sense:      { min: 1, max: 12,   step: 1,     label: "stalking range" },
-    shelter:    { min: 0, max: 1,    step: 0.05,  label: "rock as cover" }
+    speed: {
+      min: 0.1, max: 1, step: 0.05,
+      label: "move speed",
+      help: "chance to move when a movement is available"
+    },
+    birthEnergy: {
+      min: 12, max: 28, step: 1,
+      label: "birth energy"
+    }
   },
 
   shade(ra, rb, frame, out) {
-    const t = rb / 200 > 1 ? 1 : rb / 200;
+    const t = rb / 20 > 1 ? 1 : rb / 20;
     const k = 0.45 + 0.55 * t;
     out[0] = 255 * k;
     out[1] = 61 * k + 35 * (1 - t);
@@ -1179,89 +1068,73 @@ const BUILTIN = [
   },
 
   update(api) {
-    // The apex layer, and deliberately a poor hunter: most pounces fail. It
-    // mostly culls the weak, burns energy far faster than its prey, and only
-    // breeds after real hunting success - so its numbers track the herds.
+    const dirs = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+    const preyCover = (dx, dy) => {
+      let cover = 0;
+      for (let y = -1; y <= 1; y++)
+        for (let x = -1; x <= 1; x++) {
+          if (!x && !y) continue;
+          const n = api.get(dx + x, dy + y);
+          if (n === PLANT) cover += 1;
+          else if (n === ROCK) cover += 0.5;
+        }
+      return cover;
+    };
+    const exposedPrey = (dx, dy) =>
+      api.get(dx, dy) === GRAZER && preyCover(dx, dy) < 3;
+    if (api.rb === 0) return api.set(0, 0, DETRITUS);
+    if (api.chance(this.metabolism)) {
+      api.rb = api.rb - 1;
+      if (api.rb === 0) return api.set(0, 0, DETRITUS);
+    }
 
-    if (api.rb <= 1) return api.set(0, 0, LITTER);          // starved
-
-    // look around: crowding, adjacent prey, adjacent carcass - and further
-    // out, the nearest grazer worth stalking. A predator must see farther
-    // than its prey's panic radius or it could never close on a fleeing herd.
-    let crowd = 0, gx = 0, gy = 0, prey = false, lx = 0, ly = 0, carc = false;
-    for (let dy = -1; dy <= 1; dy++)
-      for (let dx = -1; dx <= 1; dx++) {
-        if (!dx && !dy) continue;
-        const n = api.get(dx, dy);
-        if (n === PREDATOR) crowd++;
-        else if (n === GRAZER) { gx = dx; gy = dy; prey = true; }
-        else if (n === LITTER) { lx = dx; ly = dy; carc = true; }
+    // Predator reproduction is restricted to open patches: four of the eight
+    // neighboring cells must be empty, with at least one occupied anchor.
+    if (api.rb > this.birthEnergy) {
+      const empty = [];
+      let occupied = 0;
+      for (const d of dirs) {
+        if (api.get(d[0], d[1]) === EMPTY) empty.push(d);
+        else occupied++;
       }
-    const R = this.sense;
+      if (empty.length >= this.birthEmpty && occupied >= this.birthOccupied) {
+        const d = empty[api.rand(empty.length)];
+        const childEnergy = api.rb >> 1;
+        api.rb = api.rb - childEnergy;
+        return api.set(d[0], d[1], PREDATOR, { rb: childEnergy });
+      }
+    }
+
+    // Spot the nearest grazer within a fixed range. Cover blocks the actual
+    // pounce below; it does not give predators impossible global knowledge.
+    const R = 7;
     let bx = 0, by = 0, bd = 999;
     for (let dy = -R; dy <= R; dy++)
       for (let dx = -R; dx <= R; dx++)
         if ((dx || dy) && api.get(dx, dy) === GRAZER) { const d = dx * dx + dy * dy; if (d < bd) { bd = d; bx = dx; by = dy; } }
     const hunting = bd < 999;
 
-    // METABOLISM - stalking is expensive. With no prey in sight a starving
-    // predator drops into TORPOR and burns almost nothing, which is what
-    // carries a scattered few through a crash in the herds.
-    const torpid = !hunting && api.rb < 60;
-    if (api.chance(torpid ? 0.02 : this.metabolism)) api.rb = api.rb - 1;
-
-    // POUNCE - prey deep in vegetation (3+ plant neighbours) is safe outright,
-    // and a fat healthy grazer usually outruns the charge while a starving one
-    // rarely does. Kills are rare, so a kill is a big meal.
-    if (prey) {
-      const condition = api.getRb(gx, gy) / 255;      // 1 = fat and fast
-      if (api.chance(this.hunt + this.weakBonus * (1 - condition))) {
-        // COVER - dense vegetation hides prey outright; rock counts for half,
-        // so a grazer properly wedged into a crevice is awkward to reach. The
-        // half-weight matters: three rock faces is what you get merely from
-        // standing on bedrock or against the world edge (off-grid reads come
-        // back as ROCK), and that must never be enough on its own.
-        let cover = 0;
-        for (let dy = -1; dy <= 1; dy++)
-          for (let dx = -1; dx <= 1; dx++) {
-            if (!dx && !dy) continue;
-            const n = api.get(gx + dx, gy + dy);
-            if (n === PLANT) cover += 1;
-            else if (n === ROCK) cover += this.shelter;
-          }
-        if (cover < 3) { api.move(gx, gy); api.rb = Math.min(255, api.rb + this.meal); return; }
+    // POUNCE - one fixed encounter probability. Dense vegetation and true rock
+    // crevices remain spatial refuges, but neither is a tunable animal trait.
+    // A satiated predator does not waste prey while it is waiting for enough
+    // open space to give birth.
+    if (api.rb < this.energyCap) {
+      const start = api.rand(8);
+      for (let i = 0; i < 8; i++) {
+        const d = dirs[(start + i) & 7];
+        if (!exposedPrey(d[0], d[1])) continue;
+        if (api.chance(0.35 * this.speed)) {
+          api.move(d[0], d[1]);
+          api.rb = Math.min(this.energyCap, api.rb + this.mealEnergy);
+          return;
+        }
+        break;   // at most one pounce per tick
       }
     }
 
-    // SCAVENGE - carrion keeps a hungry predator alive, but its cap sits two
-    // full kills below the breeding threshold, so it can never breed them
-    if (carc && api.rb < 120) { api.set(lx, ly, EMPTY); api.rb = Math.min(255, api.rb + 20); return; }
-
-    // BREED - only on the surplus of real hunting, and only when not crowded
-    if (api.rb >= 235 && crowd <= 1 && api.chance(this.breedRate)) {
-      const rx = api.rand(3) - 1, ry = api.rand(3) - 1;
-      if ((rx || ry) && api.get(rx, ry) === EMPTY) {
-        const half = api.rb >> 1;
-        api.rb = api.rb - half;
-        return api.set(rx, ry, PREDATOR, { rb: half });
-      }
-    }
-
-    // MOVE - hungry? head for the nearest carcass. Otherwise stalk the grazer
-    // spotted earlier. Otherwise wander.
-    if (api.rb < 120) {
-      let lbx = 0, lby = 0, lbd = 999;
-      for (let dy = -16; dy <= 16; dy++)
-        for (let dx = -16; dx <= 16; dx++)
-          if ((dx || dy) && api.get(dx, dy) === LITTER) { const d = dx * dx + dy * dy; if (d < lbd) { lbd = d; lbx = dx; lby = dy; } }
-      if (lbd < 999) {
-        const sx = lbx > 0 ? 1 : lbx < 0 ? -1 : 0, sy = lby > 0 ? 1 : lby < 0 ? -1 : 0;
-        if (sx && Math.abs(lbx) >= Math.abs(lby) && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
-        if (sy && api.get(0, sy) === EMPTY) return api.move(0, sy);
-        if (sx && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
-        if ((sx || sy) && api.get(sx, sy) === EMPTY) return api.move(sx, sy);
-      }
-    }
+    // MOVE - stalk visible prey, otherwise wander.
+    if (api.get(0, 1) === EMPTY) return api.move(0, 1);
+    if (!api.chance(this.speed)) return;
     if (hunting) {
       const sx = bx > 0 ? 1 : bx < 0 ? -1 : 0, sy = by > 0 ? 1 : by < 0 ? -1 : 0;
       if (sx && Math.abs(bx) >= Math.abs(by) && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
@@ -1269,10 +1142,8 @@ const BUILTIN = [
       if (sx && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
       if ((sx || sy) && api.get(sx, sy) === EMPTY) return api.move(sx, sy);
     }
-    if (api.get(0, 1) === EMPTY && api.chance(0.5)) return api.move(0, 1);
     const d = api.randDir();
     if (api.get(d, 0) === EMPTY) return api.move(d, 0);
-    if (api.get(0, 1) === EMPTY) return api.move(0, 1);
   }
 }` },
 
@@ -1298,12 +1169,12 @@ const BUILTIN = [
     // WILDFIRE - the disturbance that resets the landscape. It does not burn
     // everything equally: how readily a plant catches depends on how DRY it
     // is, so parched scrub goes up while lush riverbank growth barely catches.
-    // Water is a firebreak. What burns leaves ash (Litter), which rots into
-    // Soil - so a burnt landscape comes back richer than it was.
+    // Water is a firebreak. Burned plants and animals leave temporary
+    // Detritus, so a disturbance stays visible without adding a nutrient loop.
 
     if (api.rb === 0) api.rb = Math.max(3, Math.round(this.life * 0.75) + api.rand(Math.max(1, Math.round(this.life * 0.5))));
     api.rb--;
-    if (api.rb <= 1) return api.set(0, 0, api.chance(this.ash) ? LITTER : EMPTY);
+    if (api.rb <= 1) return api.set(0, 0, api.chance(this.ash) ? DETRITUS : EMPTY);
 
     let fuel = false;   // is there anything here worth burning?
     for (let dy = -1; dy <= 1; dy++) {
@@ -1319,7 +1190,7 @@ const BUILTIN = [
           const p = (api.prop(PLANT, "burnDry") || 0.3) * dry * dry;
           if (p > 0) { fuel = true; if (api.chance(p)) api.set(dx, dy, FIRE); }
         } else if (n === GRAZER || n === PREDATOR) {
-          if (api.chance(0.2)) api.set(dx, dy, LITTER);      // caught in the blaze
+          if (api.chance(0.2)) api.set(dx, dy, DETRITUS);    // caught in the blaze
         } else {
           const f = api.flammabilityOf(n);
           if (f > 0) { fuel = true; if (api.chance(f)) api.set(dx, dy, FIRE); }
@@ -1446,7 +1317,9 @@ function paint(px, py, r, id) {
   if (!(id >= 0 && id < EL.length)) return;
   const rr = r * r;
   const prob = (id <= 1 || r < 2) ? 1 : 0.5; // sprinkle loose matter, solid for wall/erase
-  const prb = (EL[id].def.paintRb ? EL[id].def.paintRb : 0) & 255;
+  const def = EL[id].def;
+  const pra = def.paintRa !== undefined ? def.paintRa & 255 : null;
+  const prb = def.paintRb !== undefined ? def.paintRb & 255 : 0;
   for (let dy = -r; dy <= r; dy++) {
     const y = py + dy;
     if (y < 0 || y >= H) continue;
@@ -1458,7 +1331,7 @@ function paint(px, py, r, id) {
       if (id === 0) { if (S[i] !== 0) { S[i] = 0; RA[i] = rnd256(); RB[i] = 0; } continue; }
       if (id !== 1 && S[i] !== 0) continue;         // only wall paints over stuff
       if (Math.random() > prob) continue;
-      S[i] = id; RA[i] = rnd256(); RB[i] = prb; CL[i] = gen;
+      S[i] = id; RA[i] = pra === null ? rnd256() : pra; RB[i] = prb; CL[i] = gen;
     }
   }
 }
@@ -1472,25 +1345,29 @@ function paintRect(x0, y0, x1, y1, id) {
   if (!(id >= 0 && id < EL.length)) return;
   const xa = Math.max(0, Math.min(x0, x1)), xb = Math.min(W - 1, Math.max(x0, x1));
   const ya = Math.max(0, Math.min(y0, y1)), yb = Math.min(H - 1, Math.max(y0, y1));
-  const prb = (EL[id].def.paintRb ? EL[id].def.paintRb : 0) & 255;
+  const def = EL[id].def;
+  const pra = def.paintRa !== undefined ? def.paintRa & 255 : null;
+  const prb = def.paintRb !== undefined ? def.paintRb & 255 : 0;
   for (let y = ya; y <= yb; y++)
     for (let x = xa; x <= xb; x++) {
       const i = y * W + x;
       if (id === 0) { if (S[i] !== 0) { S[i] = 0; RA[i] = rnd256(); RB[i] = 0; } continue; }
       if (id !== 1 && S[i] !== 0) continue;         // same rule as the brush
-      S[i] = id; RA[i] = rnd256(); RB[i] = prb; CL[i] = gen;
+      S[i] = id; RA[i] = pra === null ? rnd256() : pra; RB[i] = prb; CL[i] = gen;
     }
 }
 function flood(x, y, id) {
   if (x < 0 || x >= W || y < 0 || y >= H || !(id >= 0 && id < EL.length)) return;
   const target = S[y * W + x];
   if (target === id) return;
-  const prb = (EL[id].def.paintRb ? EL[id].def.paintRb : 0) & 255;
+  const def = EL[id].def;
+  const pra = def.paintRa !== undefined ? def.paintRa & 255 : null;
+  const prb = def.paintRb !== undefined ? def.paintRb & 255 : 0;
   const stack = [y * W + x];
   while (stack.length) {
     const i = stack.pop();
     if (S[i] !== target) continue;
-    S[i] = id; RA[i] = rnd256(); RB[i] = prb; CL[i] = gen;
+    S[i] = id; RA[i] = pra === null ? rnd256() : pra; RB[i] = prb; CL[i] = gen;
     const xx = i % W;
     if (xx > 0) stack.push(i - 1);
     if (xx < W - 1) stack.push(i + 1);
@@ -1739,6 +1616,7 @@ $('btnTuneReset').addEventListener('click', () => {
     const fresh = compileSource(el.src);
     for (const k of tuneKeys(el.def)) if (typeof fresh[k] === 'number') el.def[k] = fresh[k];
     renderTuning(selId);
+    renderLifeTune();
     setMsg('sliders reset to this element\'s own defaults', 'ok');
   } catch (e) {
     setMsg('could not reset: ' + (e && e.message ? e.message : e), 'err');
@@ -1794,20 +1672,28 @@ $('apiOverlay').addEventListener('click', e => { if (e.target === $('apiOverlay'
 
 /* ---------- 9. demo scene + boot ---------- */
 function seed() {
+  // Resolve by name so a future registry reorder cannot silently paint the
+  // wrong species into the demo. Resolve before clearing so an incompatible
+  // imported ruleset cannot destroy the current world and then fail.
+  const need = k => {
+    const id = identOwner.get(k);
+    if (id === undefined) throw new Error('demo needs an element named ' + k);
+    return id;
+  };
+  const EMPTY = need('EMPTY'), ROCK = need('ROCK'), GROUND = need('GROUND'),
+        WATER = need('WATER'), SPRING = need('SPRING'), PLANT = need('PLANT'),
+        GRAZER = need('GRAZER'), PREDATOR = need('PREDATOR');
   clearWorld();
-  // element ids in this ruleset
-  const EMPTY = 0, ROCK = 1, WATER = 3, SPRING = 4, PLANT = 5, SOIL = 7,
-        GRAZER = 8, PREDATOR = 9;
 
   // --- randomized geography: every demo valley is a little different ---
   const vc = 0.38 + Math.random() * 0.24;    // where the valley sits
   const vw = 1.7 + Math.random() * 1.1;      // how narrow it is
   const vd = 0.16 + Math.random() * 0.09;    // how deep it is
-  const base = 0.52 + Math.random() * 0.07;  // plateau height
+  const base = 0.59 + Math.random() * 0.07;  // lower plateau: more sky, less ground
   const ph = Math.random() * 6.28;           // relief phase
   const ra = 0.02 + Math.random() * 0.02;    // relief amplitude
 
-  // --- terrain: a valley between two rises, fertile earth over bedrock ---
+  // --- terrain: one loose ground substrate forming a valley ---
   const gh = x => {
     const t = x / W;
     return H * base
@@ -1821,13 +1707,14 @@ function seed() {
   const k = H / 256;                          // linear scale
   const kn = (W * H) / (256 * 256);           // area scale, for populations
   const px = f => Math.max(1, Math.round(f * k));
-  const cnt = (lo, hi) => Math.max(2, Math.round((lo + Math.random() * (hi - lo)) * kn));
+  const cntArea = (lo, hi) => Math.max(2, Math.round((lo + Math.random() * (hi - lo)) * kn));
+  const cntLine = (lo, hi, floor) => Math.max(floor, Math.round((lo + Math.random() * (hi - lo)) * k));
 
   // No bedrock layer: reads past the edge of the world already come back as
   // ROCK, so the bottom edge is a floor whether or not anything is drawn there.
   for (let x = 0; x < W; x++) {
     const top = Math.round(gh(x));
-    for (let y = top; y < H; y++) setCell(x, y, SOIL);
+    for (let y = top; y < H; y++) setCell(x, y, GROUND);
   }
 
   // --- a lake in the valley, with springs on the bottom to renew it ---
@@ -1861,10 +1748,8 @@ function seed() {
   }
 
   // --- rocky outcrops on the shore ---
-  // Rock is the only thing here that neither burns nor weathers, so an
-  // outcrop earns its place three ways: it stops a wildfire dead, it shields
-  // the soil tucked against it from eroding, and the hollow at its base is a
-  // crevice a grazer can back into where a predator struggles to reach it.
+  // Rock stops wildfire, shapes water, and makes a crevice a grazer can back
+  // into where a predator struggles to reach it.
   const bluffAt = (bx, openRight) => {
     const g = Math.round(gh(bx));
     const hgt = px(12) + ((Math.random() * px(6)) | 0);
@@ -1910,7 +1795,7 @@ function seed() {
 
   // loose boulders: too small to shelter in, but they break a fire front up
   // so a burn leaves surviving pockets instead of scouring the whole valley
-  const nboulder = cnt(7, 14);
+  const nboulder = cntArea(7, 14);
   for (let i = 0; i < nboulder && dry.length; i++) {
     const x = dry[(Math.random() * dry.length) | 0];
     const g = Math.round(gh(x));
@@ -1922,18 +1807,21 @@ function seed() {
 
   // let the shoreline green up before the animals arrive, so the world is
   // already alive on the first frame (a couple hundred ticks is instant)
-  const warmup = 180 + ((Math.random() * 100) | 0);
+  const warmup = 300 + ((Math.random() * 120) | 0);
   for (let t = 0; t < warmup; t++) tick();
 
   // --- release the wildlife: a modest herd, and a few predators ---
-  const nherd = cnt(10, 18);
+  const nherd = cntLine(14, 20, 8);
+  const herdXs = [];
+  for (let x = 6; x < W - 6; x++)
+    if (Math.abs(Math.round(gh(x)) - wl) <= px(30)) herdXs.push(x);
   for (let i = 0; i < nherd; i++) {
-    const x = 6 + ((Math.random() * (W - 12)) | 0);
+    const x = herdXs.length ? herdXs[(Math.random() * herdXs.length) | 0]
+                            : 6 + ((Math.random() * (W - 12)) | 0);
     const g = Math.round(gh(x));
-    if (Math.abs(g - wl) > px(30)) continue;           // keep them near the green
     setCell(x, Math.min(g, wl) - px(3) - ((Math.random() * px(3)) | 0), GRAZER);
   }
-  const npred = cnt(3, 6);
+  const npred = cntLine(2, 3, 1);
   for (let i = 0; i < npred; i++) {
     const x = Math.max(4, Math.min(W - 5, Math.round(W * (vc - 0.2 + Math.random() * 0.4))));
     setCell(x, Math.min(Math.round(gh(x)), wl) - px(9), PREDATOR);
@@ -2048,7 +1936,7 @@ function frameLoop(t) {
   allocWorld(160);
   seed();
   UNDO.length = 0;   // the pre-seed blank world is not a state worth undoing to
-  selId = 2; // sand
+  selId = 2; // ground
   paintRange($('brush'));
   rebuildPalette();
   selectElement(2);
@@ -2063,11 +1951,13 @@ window.sandlab = {
   rb: () => RB,
   ra: () => RA,
   get: (x, y) => S[y * W + x],
+  resize(n) { allocWorld(n); return n; },
+  put(x, y, id, opts) { return setCell(x, y, id, opts); },
   count(id) { let c = 0; for (let i = 0; i < S.length; i++) if (S[i] === id) c++; return c; },
   idOf(name) { const k = identFor(name); return identOwner.has(k) ? identOwner.get(k) : -1; },
   census() {
     const out = {};
-    for (const nm of ['Plant', 'Grazer', 'Predator', 'Litter', 'Soil', 'Water', 'Sand']) {
+    for (const nm of ['Plant', 'Grazer', 'Predator', 'Detritus', 'Ground', 'Water']) {
       const id = this.idOf(nm);
       out[nm] = id < 0 ? 0 : this.count(id);
     }
