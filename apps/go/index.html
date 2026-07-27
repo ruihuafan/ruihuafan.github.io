@@ -64,6 +64,7 @@
 <main class="container">
   <h1>Go vs KataGo</h1>
   <p class="sub">A real KataGo neural network running in your browser — no server, no search, just the raw policy.
+    Or set the opponent to Human and share the board with a friend.
     New to the game? <a href="#rules">Read the rules tutorial below</a>.</p>
 
   <div class="controls">
@@ -76,7 +77,13 @@
         <option value="19">19×19</option>
       </select>
     </label>
-    <label>You play
+    <label>Opponent
+      <select id="mode">
+        <option value="ai" selected>KataGo</option>
+        <option value="hvh">Human (local)</option>
+      </select>
+    </label>
+    <label id="colorLabel">You play
       <select id="color">
         <option value="1" selected>Black</option>
         <option value="2">White</option>
@@ -386,7 +393,7 @@ function scoreSelf(net){
 }
 
 /* ---------------- App state & AI ---------------- */
-let game=new Game(9), humanColor=BLACK, thinking=false, epoch=0, lastUserCaps=0;
+let game=new Game(9), humanColor=BLACK, mode='ai', thinking=false, epoch=0, lastUserCaps=0;
 const statusEl=document.getElementById('status');
 function colorName(c){return c===BLACK?'Black':'White';}
 function setStatus(html){statusEl.innerHTML=html;}
@@ -492,55 +499,70 @@ function draw(){
   }
 }
 canvas.addEventListener('click',ev=>{
-  if(thinking||game.over||model===null||game.turn!==humanColor) return;
+  if(thinking||game.over) return;
+  if(mode==='ai'&&(model===null||game.turn!==humanColor)) return;
   const rect=canvas.getBoundingClientRect();
   const N=game.N, cell=rect.width/(N+1);
   const x=Math.round((ev.clientX-rect.left)/cell)-1;
   const y=Math.round((ev.clientY-rect.top)/cell)-1;
   if(x<0||y<0||x>=N||y>=N) return;
   if(!game.play(y*N+x)) return;
-  lastUserCaps=game.history[game.history.length-1].captured.length;
+  const caps=game.history[game.history.length-1].captured.length;
   draw();
-  aiMove();
+  if(mode==='ai'){ lastUserCaps=caps; aiMove(); }
+  else{
+    const capsTxt=caps?(colorName(3-game.turn)+' captured '+caps+' stone'+(caps>1?'s':'')+'. '):'';
+    setStatus(capsTxt+colorName(game.turn)+' to move.');
+  }
 });
 
 /* ---------------- Controls ---------------- */
 function newGame(){
   epoch++; thinking=false;   // cancel any in-flight AI computation
+  mode=document.getElementById('mode').value;
+  document.getElementById('colorLabel').style.display=(mode==='ai')?'':'none';
   game=new Game(parseInt(document.getElementById('size').value,10));
   humanColor=parseInt(document.getElementById('color').value,10);
   draw();
+  // two-player mode needs no net — playable even while (or if) it loads
+  if(mode==='hvh'){ setStatus('Two players, one board — Black to move. Komi '+KOMI+'.'); return; }
   if(model===null){ setStatus('Loading neural network (~12 MB)&hellip;'); return; }
   if(game.turn!==humanColor) aiMove();
   else setStatus('Your move ('+colorName(humanColor)+'). Komi '+KOMI+'.');
 }
 document.getElementById('new').addEventListener('click',newGame);
-// changing board size or color takes effect immediately (starts a fresh game)
+// changing board size, color, or opponent takes effect immediately (fresh game)
 document.getElementById('size').addEventListener('change',newGame);
 document.getElementById('color').addEventListener('change',newGame);
+document.getElementById('mode').addEventListener('change',newGame);
 document.getElementById('pass').addEventListener('click',async()=>{
-  if(thinking||game.over||game.turn!==humanColor) return;
+  if(thinking||game.over) return;
+  if(mode==='ai'&&game.turn!==humanColor) return;
   game.pass(); draw();
   if(game.over){
+    if(model===null){ setStatus('Game over &middot; press New game to play again'); return; }
     const myEpoch=epoch;
-    const net=await runNet(game); // side to move now = the AI
+    const net=await runNet(game); // score from the side to move's perspective
     if(epoch!==myEpoch) return;
     endGame(scoreSelf(net),colorName(game.turn),colorName(3-game.turn));
   }
-  else aiMove();
+  else if(mode==='ai') aiMove();
+  else setStatus(colorName(3-game.turn)+' passes. '+colorName(game.turn)+' to move.');
 });
 document.getElementById('undo').addEventListener('click',()=>{
   if(thinking||!game.history.length) return;
   game.undo();
-  while(game.history.length&&game.turn!==humanColor) game.undo();
-  draw(); setStatus('Your move ('+colorName(game.turn)+').');
+  // vs the AI, also unwind its reply so it's the human's turn again
+  if(mode==='ai') while(game.history.length&&game.turn!==humanColor) game.undo();
+  draw();
+  setStatus(mode==='ai'?('Your move ('+colorName(game.turn)+').'):(colorName(game.turn)+' to move.'));
 });
 window.addEventListener('resize',draw);
 
 /* ---------------- Boot ---------------- */
 // small debug handle for automated testing
 window.__goDebug=function(){
-  return {N:game.N,turn:game.turn,over:game.over,thinking,modelReady:model!==null,
+  return {N:game.N,turn:game.turn,over:game.over,mode,thinking,modelReady:model!==null,
           hist:game.history.map(m=>m.pass?'pass':m.i),
           board:Array.from(game.board),
           stones:Array.from(game.board).filter(v=>v!==0).length};
