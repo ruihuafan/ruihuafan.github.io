@@ -1,331 +1,386 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global News Brief</title>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;600&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
-        
-        h1, h2, h3 {
-            font-family: 'Merriweather', serif;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Global News — Ruihua Fan</title>
+<!--
+  Global news digest: five headlines each from Chinese, US, and European media
+  (RSS via public CORS proxies, with fallback), plus three AI-written stories
+  generated on demand by the Claude API (claude-opus-5).
+  The API key is entered by the visitor and kept in localStorage only —
+  it is never stored in this repository or sent anywhere except api.anthropic.com.
+-->
+<style>
+  :root { --max: 880px; --fg:#0f172a; --muted:#475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; --line:#e2e8f0; }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--fg);background:var(--bg)}
+  header{border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;backdrop-filter:saturate(180%) blur(6px);z-index:5}
+  nav{max-width:var(--max);margin:0 auto;display:flex;gap:18px;align-items:center;padding:12px 16px}
+  nav a{color:var(--muted);text-decoration:none;font-weight:600}
+  nav a:hover{color:var(--link)}
+  .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
+  h1{font-size:28px;line-height:1.2;margin:0 0 4px}
+  h2{font-size:20px;margin:26px 0 10px}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+  a{color:var(--link);text-decoration:none}
+  a:hover{text-decoration:underline}
 
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #999;
-        }
-    </style>
+  .brief{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0 6px}
+  .brief-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .brief-head h2{margin:0;font-size:19px}
+  .brief-head .spacer{margin-left:auto}
+  button{font:inherit;font-size:.9rem;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--fg);cursor:pointer}
+  button:hover:not(:disabled){border-color:#cbd5e1;color:var(--link)}
+  button:disabled{opacity:.5;cursor:default}
+  button.primary{background:var(--link);border-color:var(--link);color:#fff}
+  button.primary:hover:not(:disabled){color:#fff;opacity:.92}
+  .keyline{font-size:.82rem;color:var(--muted);margin-top:8px}
+  .keyline a{cursor:pointer}
+  .story{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .story h3{margin:0 0 6px;font-size:15px}
+  .story p{margin:0;font-size:.95rem;line-height:1.65}
+  .status{font-size:.88rem;color:var(--muted)}
+  .error{color:#b91c1c;font-size:.88rem}
+
+  .region-tag{font-size:12px;padding:2px 10px;border-radius:999px;vertical-align:2px;margin-left:8px}
+  .tag-china{background:#fef2f2;color:#991b1b}
+  .tag-us{background:#eff6ff;color:#1e40af}
+  .tag-europe{background:#ecfdf5;color:#065f46}
+
+  ul.news{list-style:none;margin:0;padding:0}
+  ul.news li{padding:10px 0;border-bottom:1px solid var(--line)}
+  ul.news li:last-child{border-bottom:none}
+  .src{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
+  .when{font-size:.78rem;color:var(--muted)}
+  .headline{display:block;font-weight:600;color:var(--fg);margin:2px 0}
+  .headline:hover{color:var(--link)}
+  .desc{font-size:.9rem;color:var(--muted);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .foot{color:var(--muted);font-size:.8rem;margin-top:28px;border-top:1px solid var(--line);padding-top:12px;line-height:1.5}
+
+  dialog{border:1px solid var(--line);border-radius:12px;padding:20px;max-width:430px;width:92%}
+  dialog::backdrop{background:rgba(15,23,42,.35)}
+  dialog h3{margin:0 0 8px}
+  dialog p{font-size:.88rem;color:var(--muted);margin:0 0 12px}
+  dialog input{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+  .dlg-row{display:flex;gap:8px;justify-content:flex-end}
+</style>
 </head>
 <body>
-    <div id="root"></div>
+<header>
+  <nav>
+    <a href="/" style="margin-right:auto">Welcome</a>
+    <a href="/notes/">Notes</a>
+    <a href="/misc/">Miscellaneous</a>
+  </nav>
+</header>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        const summarizeText = (htmlContent) => {
-            if (!htmlContent) return "No summary available.";
-            const div = document.createElement("div");
-            div.innerHTML = htmlContent;
-            let text = div.textContent || div.innerText || "";
-            text = text.replace(/\s+/g, " ").trim();
-            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-            const summary = sentences.slice(0, 2).join(" ");
-            if (summary.length < 50) return text.substring(0, 150) + "...";
-            return summary;
-        };
+<main class="container">
+  <h1>Global News</h1>
+  <p class="sub" id="dateline"></p>
 
-        const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1000&auto=format&fit=crop";
+  <div class="brief">
+    <div class="brief-head">
+      <h2>AI daily briefing</h2>
+      <span class="spacer"></span>
+      <button class="primary" id="gen">Generate stories</button>
+    </div>
+    <div class="status" id="brief-status">
+      Three seven-sentence stories — one each for the Chinese, US, and European headlines below — written by Claude.
+    </div>
+    <div id="stories"></div>
+    <div class="keyline" id="keyline"></div>
+  </div>
 
-        const FEEDS = {
-            World: [
-                "https://feeds.bbci.co.uk/news/world/rss.xml",
-                "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
-                "https://www.theguardian.com/world/rss"
-            ],
-            Tech: [
-                "http://feeds.bbci.co.uk/news/technology/rss.xml",
-                "https://techcrunch.com/feed/",
-                "https://www.theverge.com/rss/index.xml"
-            ],
-            Business: [
-                "http://feeds.bbci.co.uk/news/business/rss.xml",
-                "https://www.cnbc.com/id/100003114/device/rss/rss.html"
-            ]
-        };
+  <section>
+    <h2>Chinese media <span class="region-tag tag-china">China</span></h2>
+    <ul class="news" id="list-china"><li class="status">Loading…</li></ul>
+  </section>
+  <section>
+    <h2>US media <span class="region-tag tag-us">US</span></h2>
+    <ul class="news" id="list-us"><li class="status">Loading…</li></ul>
+  </section>
+  <section>
+    <h2>European media <span class="region-tag tag-europe">Europe</span></h2>
+    <ul class="news" id="list-europe"><li class="status">Loading…</li></ul>
+  </section>
 
-        const extractImage = (item) => {
-            if (item.thumbnail) return item.thumbnail;
-            if (item.enclosure && item.enclosure.link) return item.enclosure.link;
-            const div = document.createElement('div');
-            div.innerHTML = item.description || item.content || '';
-            const img = div.querySelector('img');
-            if (img) return img.src;
-            return PLACEHOLDER_IMG;
-        };
+  <p class="foot">
+    Headlines are fetched live from each outlet's public RSS feed and reflect the source's own wording.
+    AI stories are generated by Claude (claude-opus-5) from the headlines and summaries shown here, on your request, using an API key that stays in your browser.
+    <a href="/misc/">&larr; back to Miscellaneous</a>
+  </p>
+</main>
 
-        const NewsCard = ({ item }) => {
-            const [imgSrc, setImgSrc] = useState(extractImage(item));
-            const summary = summarizeText(item.description || item.content);
-            const cleanTitle = item.title.split(" - ")[0];
+<dialog id="keydlg">
+  <h3>Anthropic API key</h3>
+  <p>The key is stored only in this browser (localStorage) and sent only to <code>api.anthropic.com</code>.
+     It is never uploaded to this website. Get a key at console.anthropic.com.</p>
+  <input type="password" id="keyinput" placeholder="sk-ant-...">
+  <div class="dlg-row">
+    <button id="keyclear">Remove key</button>
+    <button id="keycancel">Cancel</button>
+    <button class="primary" id="keysave">Save</button>
+  </div>
+</dialog>
 
-            return (
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col h-full border border-gray-100 group">
-                    <div className="relative h-48 overflow-hidden bg-gray-200">
-                        <img 
-                            src={imgSrc} 
-                            alt={cleanTitle}
-                            onError={() => setImgSrc(PLACEHOLDER_IMG)}
-                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs px-2 py-1 m-2 rounded font-bold uppercase tracking-wider shadow-sm">
-                            {new Date(item.pubDate).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
-                        </div>
-                    </div>
-                    <div className="p-6 flex-1 flex flex-col">
-                        <h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight group-hover:text-blue-600 transition-colors">
-                            <a href={item.link} target="_blank" rel="noreferrer">
-                                {cleanTitle}
-                            </a>
-                        </h3>
-                        <p className="text-gray-600 text-sm leading-relaxed mb-4 flex-1">
-                            {summary}
-                        </p>
-                        <div className="mt-auto flex justify-between items-center">
-                            <a 
-                                href={item.link} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="inline-flex items-center text-blue-600 text-sm font-semibold hover:underline"
-                            >
-                                Read Full Story 
-                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+<script>
+'use strict';
+/* ---------------- Config ---------------- */
+// Feeds chosen for freshness (checked July 2026): every source below dates its
+// items and updates at least every few hours. Items older than MAX_AGE_H, or
+// with no parseable date, are discarded.
+const REGIONS = [
+  { id:'china', label:'Chinese media', feeds:[
+    { src:'SCMP',         url:'https://www.scmp.com/rss/4/feed' },
+    { src:'Global Times', url:'https://www.globaltimes.cn/rss/outbrain.xml' },
+    { src:'CGTN',         url:'https://www.cgtn.com/subscribe/rss/section/world.xml' },
+  ]},
+  { id:'us', label:'US media', feeds:[
+    { src:'NY Times', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml' },
+    { src:'NPR',      url:'https://feeds.npr.org/1001/rss.xml' },
+    { src:'CBS News', url:'https://www.cbsnews.com/latest/rss/world' },
+  ]},
+  { id:'europe', label:'European media', feeds:[
+    { src:'BBC',      url:'https://feeds.bbci.co.uk/news/world/rss.xml' },
+    { src:'Guardian', url:'https://www.theguardian.com/world/rss' },
+    { src:'DW',       url:'https://rss.dw.com/rdf/rss-en-world' },
+  ]},
+];
+const PER_REGION = 5;
+const MAX_AGE_H = 48;          // only show news from the last two days
+const KEY_STORAGE = 'anthropic_api_key';
 
-        const App = () => {
-            const [category, setCategory] = useState("World");
-            const [news, setNews] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
+document.getElementById('dateline').textContent =
+  new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-            const fetchNews = async (cat) => {
-                setLoading(true);
-                setError(null);
-                setNews([]);
+/* ---------------- RSS fetching (proxy chain) ---------------- */
+function stripHtml(s){
+  const d = document.createElement('div');
+  d.innerHTML = s || '';
+  return (d.textContent || '').replace(/\s+/g,' ').trim();
+}
 
-                try {
-                    const feedUrls = FEEDS[cat];
-                    const feedPromises = feedUrls.map(url => 
-                        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
-                            .then(res => res.json())
-                            .catch(() => ({ status: 'error' }))
-                    );
-                    const results = await Promise.all(feedPromises);
-                    
-                    let allItems = [];
-                    results.forEach(data => {
-                        if (data.status === 'ok' && data.items) {
-                            allItems = [...allItems, ...data.items];
-                        }
-                    });
+// proxy 1: rss2json (returns parsed JSON)
+async function viaRss2json(url){
+  const r = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(url));
+  if(!r.ok) throw new Error('rss2json ' + r.status);
+  const d = await r.json();
+  if(d.status !== 'ok') throw new Error('rss2json status ' + d.status);
+  return d.items.map(it => ({
+    title: stripHtml(it.title), link: it.link,
+    date: it.pubDate ? new Date(it.pubDate.replace(' ', 'T')) : null,
+    desc: stripHtml(it.description).slice(0, 300),
+  }));
+}
 
-                    if (allItems.length === 0) {
-                        throw new Error("No news items could be fetched.");
-                    }
+// proxy 2: allorigins (returns raw XML; parse with DOMParser)
+async function viaAllorigins(url){
+  const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+  if(!r.ok) throw new Error('allorigins ' + r.status);
+  const xml = new DOMParser().parseFromString(await r.text(), 'text/xml');
+  const nodes = [...xml.querySelectorAll('item')];
+  if(!nodes.length) throw new Error('no items');
+  const pick = (n, tag) => { const el = n.querySelector(tag); return el ? el.textContent : ''; };
+  return nodes.map(n => ({
+    title: stripHtml(pick(n,'title')), link: pick(n,'link').trim(),
+    date: pick(n,'pubDate') ? new Date(pick(n,'pubDate')) : null,
+    desc: stripHtml(pick(n,'description')).slice(0, 300),
+  }));
+}
 
-                    allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+// keep only items with a valid date inside the freshness window
+// (some feeds mislabel timezones, so tolerate slightly-future timestamps)
+function isFresh(it){
+  if(!it.date || isNaN(it.date)) return false;
+  const ageH = (Date.now() - it.date.getTime()) / 3.6e6;
+  return ageH <= MAX_AGE_H && ageH >= -14;
+}
 
-                    const uniqueItems = [];
-                    const seenTitles = new Set();
-                    
-                    for (const item of allItems) {
-                        const simplifiedTitle = item.title.toLowerCase().trim();
-                        if (!seenTitles.has(simplifiedTitle)) {
-                            seenTitles.add(simplifiedTitle);
-                            uniqueItems.push(item);
-                        }
-                    }
+async function fetchFeed(feed){
+  let items;
+  try { items = await viaRss2json(feed.url); }
+  catch(e){ items = await viaAllorigins(feed.url); }
+  // preserve the feed's own order — outlets put their lead stories first
+  return items.filter(it => it.title && isFresh(it)).map(it => ({ ...it, src: feed.src }));
+}
 
-                    setNews(uniqueItems.slice(0, 6));
+// round-robin across sources by feed position: each outlet's top (lead) story
+// first, then second stories, etc. — balances importance with source diversity
+function selectItems(perFeed, n){
+  const chosen = [], seen = new Set();
+  const take = it => { if(it && !seen.has(it.link||it.title)){ seen.add(it.link||it.title); chosen.push(it); } };
+  const depth = Math.max(...perFeed.map(f => f.length), 0);
+  for(let i = 0; i < depth && chosen.length < n; i++){
+    for(const items of perFeed){
+      if(chosen.length >= n) break;
+      take(items[i]);
+    }
+  }
+  return chosen.slice(0, n);
+}
 
-                } catch (err) {
-                    console.error(err);
-                    setError("Unable to fetch news at this moment. Please try again later.");
-                } finally {
-                    setLoading(false);
-                }
-            };
+const newsByRegion = {};   // region id -> items (for the Claude prompt)
 
-            useEffect(() => {
-                fetchNews(category);
-            }, [category]);
+async function loadRegion(region){
+  const ul = document.getElementById('list-' + region.id);
+  const results = await Promise.allSettled(region.feeds.map(fetchFeed));
+  const ok = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+  if(!ok.length){
+    ul.innerHTML = '<li class="error">Could not load these feeds right now — the CORS proxies may be rate-limited. Try again in a few minutes.</li>';
+    return;
+  }
+  const items = selectItems(ok, PER_REGION);
+  if(!items.length){
+    ul.innerHTML = '<li class="error">No sufficiently recent items in these feeds right now.</li>';
+    return;
+  }
+  newsByRegion[region.id] = items;
+  ul.innerHTML = '';
+  for(const it of items){
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.className = 'headline'; a.href = it.link; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = it.title;
+    const meta = document.createElement('span');
+    const src = document.createElement('span'); src.className = 'src'; src.textContent = it.src;
+    const when = document.createElement('span'); when.className = 'when';
+    when.textContent = it.date ? it.date.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    meta.append(src, when);
+    const p = document.createElement('p'); p.className = 'desc'; p.textContent = it.desc;
+    li.append(meta, a, p);
+    ul.appendChild(li);
+  }
+}
 
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [loading, news]);
+/* ---------------- API key management ---------------- */
+const dlg = document.getElementById('keydlg');
+const keyline = document.getElementById('keyline');
+function getKey(){ return localStorage.getItem(KEY_STORAGE) || ''; }
+function renderKeyline(){
+  keyline.innerHTML = getKey()
+    ? 'API key saved in this browser. <a id="keyedit">Change or remove</a>'
+    : 'Requires your Anthropic API key (stays in this browser). <a id="keyedit">Set key</a>';
+  document.getElementById('keyedit').onclick = () => {
+    document.getElementById('keyinput').value = getKey();
+    dlg.showModal();
+  };
+}
+document.getElementById('keysave').onclick = () => {
+  const v = document.getElementById('keyinput').value.trim();
+  if(v) localStorage.setItem(KEY_STORAGE, v);
+  dlg.close(); renderKeyline();
+};
+document.getElementById('keyclear').onclick = () => {
+  localStorage.removeItem(KEY_STORAGE);
+  document.getElementById('keyinput').value = '';
+  dlg.close(); renderKeyline();
+};
+document.getElementById('keycancel').onclick = () => dlg.close();
+renderKeyline();
 
-            const dateToday = new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-            });
+/* ---------------- Claude story generation ---------------- */
+const REGION_TITLES = { china:'From Chinese media', us:'From US media', europe:'From European media' };
 
-            return (
-                <div className="min-h-screen pb-12 flex flex-col">
-                    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex justify-between items-center h-20">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-gray-900 text-white p-2 rounded-lg">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                                    </div>
-                                    <div>
-                                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Daily Briefing</h1>
-                                        <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">{dateToday}</p>
-                                    </div>
-                                </div>
-                                
-                                <nav className="hidden md:flex space-x-1 bg-gray-100 p-1 rounded-lg">
-                                    {Object.keys(FEEDS).map((cat) => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => setCategory(cat)}
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                                                category === cat 
-                                                ? 'bg-white text-gray-900 shadow-sm' 
-                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
-                                            }`}
-                                        >
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </nav>
-                            </div>
-                        </div>
-                    </header>
+function buildPrompt(){
+  let text = 'Here are today\'s news headlines grouped by the region of the reporting outlets.\n';
+  for(const region of REGIONS){
+    const items = newsByRegion[region.id] || [];
+    text += '\n## ' + region.label + '\n';
+    items.forEach((it, i) => {
+      text += (i+1) + '. [' + it.src + '] ' + it.title + (it.desc ? ' — ' + it.desc : '') + '\n';
+    });
+  }
+  text += '\nAll items are from roughly the last two days. ' +
+    'Write three news stories, one per group, each based only on that group\'s headlines above.\n' +
+    'Each story must be exactly seven sentences: lead with the most important items and weave the rest ' +
+    'into one coherent narrative of the day, in a neutral wire-service style. ' +
+    'Do not invent facts beyond the headlines and summaries given.';
+  return text;
+}
 
-                    <div className="md:hidden bg-white border-b border-gray-100 p-2 overflow-x-auto">
-                        <div className="flex space-x-2">
-                            {Object.keys(FEEDS).map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setCategory(cat)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold border whitespace-nowrap ${
-                                        category === cat 
-                                        ? 'bg-gray-900 text-white border-gray-900' 
-                                        : 'text-gray-600 border-gray-200 bg-gray-50'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+async function generateStories(){
+  const key = getKey();
+  if(!key){ document.getElementById('keyinput').value=''; dlg.showModal(); return; }
+  const loaded = REGIONS.filter(r => (newsByRegion[r.id]||[]).length);
+  if(!loaded.length){ setStatus('News is still loading — try again in a moment.', true); return; }
 
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
-                        <div className="mb-8">
-                            <h2 className="text-3xl font-bold text-gray-900">Top Stories: {category}</h2>
-                            <p className="text-gray-600 mt-2">
-                                Curated from {category === 'World' ? 'BBC, NYT, and The Guardian' : category === 'Tech' ? 'BBC, TechCrunch, and The Verge' : 'BBC and CNBC'}.
-                            </p>
-                        </div>
+  const btn = document.getElementById('gen');
+  btn.disabled = true;
+  setStatus('Claude is writing the stories… (typically under a minute)');
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'content-type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body: JSON.stringify({
+        model:'claude-opus-5',
+        max_tokens:16000,
+        output_config:{
+          effort:'low',
+          format:{ type:'json_schema', schema:{
+            type:'object',
+            properties:{ china:{type:'string'}, us:{type:'string'}, europe:{type:'string'} },
+            required:['china','us','europe'], additionalProperties:false,
+          }},
+        },
+        messages:[{ role:'user', content: buildPrompt() }],
+      }),
+    });
+    if(!r.ok){
+      const err = await r.json().catch(() => ({}));
+      const msg = err.error && err.error.message ? err.error.message : ('HTTP ' + r.status);
+      throw new Error(r.status === 401 ? 'Invalid API key — click "Change or remove" below to fix it.' : msg);
+    }
+    const d = await r.json();
+    if(d.stop_reason === 'refusal') throw new Error('Claude declined this request.');
+    const textBlock = (d.content || []).find(b => b.type === 'text');
+    if(!textBlock) throw new Error('Empty response.');
+    const stories = JSON.parse(textBlock.text);
+    renderStories(stories);
+    setStatus('Written by Claude (claude-opus-5) from the headlines below · generated ' +
+      new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}));
+  }catch(e){
+    setStatus(e.message, true);
+  }finally{
+    btn.disabled = false;
+  }
+}
 
-                        {loading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-pulse">
-                                {[...Array(6)].map((_, i) => (
-                                    <div key={i} className="bg-white rounded-xl h-96 border border-gray-100">
-                                        <div className="h-48 bg-gray-200 rounded-t-xl"></div>
-                                        <div className="p-6 space-y-4">
-                                            <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 rounded"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : error ? (
-                            <div className="text-center py-20 bg-white rounded-xl border border-red-100">
-                                <div className="text-red-500 mb-4">
-                                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                </div>
-                                <h3 className="text-lg font-medium text-gray-900">Unable to load news</h3>
-                                <p className="text-gray-500 mt-2">{error}</p>
-                                <button 
-                                    onClick={() => fetchNews(category)}
-                                    className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    Try Again
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {news.map((item, index) => (
-                                    <NewsCard key={index} item={item} />
-                                ))}
-                            </div>
-                        )}
-                    </main>
+function setStatus(msg, isError){
+  const el = document.getElementById('brief-status');
+  el.className = isError ? 'error' : 'status';
+  el.textContent = msg;
+}
 
-                    <footer className="border-t border-gray-200 bg-white mt-auto">
-                        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-                            <p className="text-sm text-gray-500">
-                                Aggregated from public RSS feeds (BBC, NYT, Guardian, etc). For personal use only.
-                            </p>
-                            <div className="flex space-x-6 mt-4 md:mt-0">
-                                <a href="https://github.com/ruihuafan" className="text-gray-400 hover:text-gray-900">
-                                    <span className="sr-only">GitHub</span>
-                                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"></path></svg>
-                                </a>
-                            </div>
-                        </div>
-                    </footer>
-                </div>
-            );
-        };
+function renderStories(stories){
+  const wrap = document.getElementById('stories');
+  wrap.innerHTML = '';
+  for(const region of REGIONS){
+    if(!stories[region.id]) continue;
+    const div = document.createElement('div');
+    div.className = 'story';
+    const h = document.createElement('h3');
+    h.textContent = REGION_TITLES[region.id];
+    const tag = document.createElement('span');
+    tag.className = 'region-tag tag-' + region.id;
+    tag.textContent = region.id === 'us' ? 'US' : region.id === 'china' ? 'China' : 'Europe';
+    h.appendChild(tag);
+    const p = document.createElement('p');
+    p.textContent = stories[region.id];
+    div.append(h, p);
+    wrap.appendChild(div);
+  }
+}
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+document.getElementById('gen').addEventListener('click', generateStories);
+
+/* ---------------- Boot ---------------- */
+REGIONS.forEach(loadRegion);
+</script>
 </body>
 </html>
