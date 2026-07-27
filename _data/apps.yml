@@ -20,7 +20,7 @@
   description: Play Go against a real KataGo neural network, entirely in your browser — board sizes 7×7 to 19×19.
   tag: game
 
-- title: Sandspiel
-  description: A falling-sand cellular-automaton sandbox — pixels of sand, water, fire, and plants.
+- title: Sandlab
+  href: /apps/sandlab.html
+  description: A falling-sand world with a closed food web — plants, grazers, predators, fire — and every rule editable live in the browser.
   tag: game
-  status: wip

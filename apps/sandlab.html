@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sandlab · falling sand</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230e0e16'/%3E%3Crect x='3' y='9' width='10' height='4' fill='%23dfab52'/%3E%3Crect x='6' y='6' width='4' height='3' fill='%23dfab52'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0c0c13; --panel:#14141d; --panel2:#0f0f17; --line:#262636; --line2:#32324a;
+    --txt:#d8d9e4; --dim:#8b8ca2; --accent:#e8b04c; --err:#ff7a7a; --ok:#7ddb8a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:13px;line-height:1.5}
+  #app{max-width:1280px;margin:0 auto;padding:14px 16px 40px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-size:17px;margin:0;letter-spacing:2px;font-weight:600}
+  h1 .blk{color:var(--accent)}
+  .tag{color:var(--dim);font-size:12px}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:16px;align-items:start}
+  @media (max-width:980px){ main{grid-template-columns:1fr} #editor{max-width:640px} }
+
+  /* --- left column --- */
+  #toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  button{font-family:var(--mono);font-size:12px;color:var(--txt);background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer}
+  button:hover{border-color:var(--line2);background:#1a1a26}
+  button.primary{border-color:var(--accent);color:var(--accent)}
+  button.primary:hover{background:#2a2314}
+  select{font-family:var(--mono);font-size:12px;color:var(--txt);background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:5px 6px}
+  .ctl{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:12px}
+  input[type=range]{width:90px;accent-color:var(--accent)}
+  #fps{margin-left:auto;color:var(--dim);font-size:11px;white-space:nowrap}
+  #canvasWrap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    background:#000;width:min(100%, calc(100vh - 230px));aspect-ratio:1/1;margin:0 auto}
+  @media (max-width:980px){ #canvasWrap{width:100%} }
+  #view{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none;cursor:crosshair}
+  #palette{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 7px;border:1px solid var(--line);
+    border-radius:8px;background:var(--panel);cursor:pointer;font-size:12px;color:var(--txt)}
+  .chip .dot{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset}
+  .chip:hover{border-color:var(--line2)}
+  .chip.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 0 10px rgba(232,176,76,.25)}
+  .chip.broken{border-color:var(--err)}
+  .hint{color:var(--dim);font-size:11px;text-align:center;margin-top:8px}
+  .census{display:flex;flex-wrap:wrap;gap:5px 16px;justify-content:center;margin-top:9px;font-size:12px;color:var(--dim)}
+  .census .item{display:inline-flex;align-items:center;gap:6px}
+  .census .dot{width:9px;height:9px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset}
+  .census .n{color:var(--txt);font-variant-numeric:tabular-nums}
+  .census .spark{color:var(--dim);letter-spacing:-1px}
+
+  /* --- editor column --- */
+  #editor{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .ed-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ed-row .grow{flex:1}
+  #edTitle{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+  #edMeta{color:var(--dim);font-size:11px;margin:6px 0 8px}
+  #edMeta b{color:var(--accent);font-weight:600}
+  #edSrc{width:100%;min-height:330px;resize:vertical;background:#0a0a11;color:#dfe2ee;border:1px solid var(--line);
+    border-radius:8px;padding:10px;font-family:var(--mono);font-size:12.4px;line-height:1.5;tab-size:2;white-space:pre;
+    overflow:auto}
+  #edSrc:focus{outline:1px solid var(--line2)}
+  #edMsg{min-height:18px;font-size:12px;margin-top:6px;white-space:pre-wrap;word-break:break-word}
+  #tuning{border:1px solid var(--line);border-radius:8px;background:var(--panel);margin:8px 0 10px}
+  #tuning .head{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line)}
+  #tuning .head .ttl{font-size:12px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+  #tuning .head .sub{color:var(--dim);font-size:11px;flex:1}
+  #tuning .body{padding:8px 10px 10px}
+  .tune-row{display:grid;grid-template-columns:112px 1fr 46px;align-items:center;gap:9px;margin:6px 0}
+  .tune-row .nm{font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tune-row input[type=range]{width:100%;accent-color:var(--accent)}
+  .tune-row .v{font-size:11.5px;color:var(--txt);text-align:right;font-variant-numeric:tabular-nums}
+  .tune-row.changed .nm{color:var(--accent)}
+  .tune-none{font-size:11.5px;color:var(--dim);line-height:1.6}
+  #edMsg.ok{color:var(--ok)} #edMsg.err{color:var(--err)}
+  details{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  summary{cursor:pointer;padding:7px 10px;font-size:12px;color:var(--dim)}
+  details[open] summary{border-bottom:1px solid var(--line);color:var(--txt)}
+  .dbody{padding:10px;font-size:11.6px;color:var(--txt)}
+  .dbody h4{margin:10px 0 3px;font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+  .dbody h4:first-child{margin-top:0}
+  .dbody code{background:#0a0a11;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:#cfe0ff}
+  .dbody p{margin:4px 0;color:var(--dim)}
+  .dbody p b{color:var(--txt);font-weight:600}
+  #ioText{width:100%;min-height:110px;resize:vertical;background:#0a0a11;color:var(--txt);border:1px solid var(--line);
+    border-radius:8px;padding:8px;font-family:var(--mono);font-size:11px;margin-top:8px}
+  #ioMsg{min-height:16px;font-size:11.5px;margin-top:4px;white-space:pre-wrap}
+  #ioMsg.ok{color:var(--ok)} #ioMsg.err{color:var(--err)}
+  .warn{color:var(--dim);font-size:11px;margin-top:6px}
+
+  /* --- modal --- */
+  #overlay{position:fixed;inset:0;background:rgba(5,5,10,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  #overlay.show{display:flex}
+  #modal{background:var(--panel);border:1px solid var(--line2);border-radius:12px;max-width:560px;width:100%;
+    max-height:82vh;overflow:auto;padding:20px 22px}
+  #modal h2{margin:0 0 10px;font-size:15px;letter-spacing:1px}
+  #modal p{color:var(--dim);margin:8px 0}
+  #modal p b{color:var(--txt)}
+  #modal .keys{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:10px 0;color:var(--dim)}
+  #modal .keys span:nth-child(odd){color:var(--accent)}
+  #modal .close{float:right}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>sandlab <span class="blk">▓▒░</span></h1>
+      <div class="tag">a minimal living world — 11 elements, one food web, every rule editable live</div>
+    </div>
+    <button id="btnAbout">about / help</button>
+  </header>
+
+  <main>
+    <section id="left">
+      <div id="toolbar">
+        <button id="btnPlay" class="primary">pause</button>
+        <button id="btnStep">step</button>
+        <button id="btnClear">clear</button>
+        <button id="btnDemo">demo scene</button>
+        <span class="ctl">speed
+          <select id="selSpeed">
+            <option value="0.5">×½</option>
+            <option value="1" selected>×1</option>
+            <option value="2">×2</option>
+            <option value="3">×3</option>
+          </select>
+        </span>
+        <span class="ctl">size
+          <select id="selSize">
+            <option value="160">160²</option>
+            <option value="256" selected>256²</option>
+            <option value="352">352²</option>
+          </select>
+        </span>
+        <span class="ctl">brush <input id="brush" type="range" min="1" max="24" value="5"><span id="brushVal">5</span></span>
+        <span id="fps"></span>
+      </div>
+      <div id="canvasWrap"><canvas id="view"></canvas></div>
+      <div id="palette"></div>
+      <div id="census" class="census"></div>
+      <div class="hint">draw with the mouse · right-drag erases · space pauses · keys 1–9,0 pick elements · edit any rule →</div>
+    </section>
+
+    <aside id="editor">
+      <div class="ed-row">
+        <span id="edTitle">element</span>
+        <select id="edSelect" class="grow"></select>
+        <button id="btnNew">+ new element</button>
+      </div>
+      <div id="edMeta"></div>
+
+      <div id="tuning">
+        <div class="head">
+          <span class="ttl">tuning</span>
+          <span class="sub" id="tuneSub">drag to change behaviour — live</span>
+          <button id="btnTuneReset">reset</button>
+        </div>
+        <div class="body" id="tuneBody"></div>
+      </div>
+
+      <textarea id="edSrc" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="ed-row" style="margin-top:8px">
+        <button id="btnApply" class="primary">apply (ctrl+↵)</button>
+        <button id="btnRevert">revert edits</button>
+        <button id="btnDefault">restore default</button>
+      </div>
+      <div id="edMsg"></div>
+
+      <details id="apiHelp">
+        <summary>api reference — how rules work</summary>
+        <div class="dbody">
+          <h4>the model</h4>
+          <p>The world is a grid. Every cell holds a <b>species id</b> plus two bytes:
+            <code>ra</code> (random at birth — used for color texture, or anything you like) and
+            <code>rb</code> (a free register, starts at 0 — commonly a life counter).
+            Each tick, every non-empty cell runs its element's <code>update(api)</code> once.
+            x grows right, <b>y grows down</b>. All offsets <code>(dx,dy)</code> are relative to the current cell.
+            Reads off the grid edge return <code>ROCK</code>.</p>
+          <h4>read</h4>
+          <p><code>api.get(dx,dy)</code> → species id of a neighbor ·
+             <code>api.getRa(dx,dy)</code>, <code>api.getRb(dx,dy)</code> → its registers ·
+             <code>api.me</code> → my species ·
+             <code>api.ra</code>, <code>api.rb</code> → my registers (assignable: <code>api.rb = 40</code>) ·
+             <code>api.x</code>, <code>api.y</code> → my position.</p>
+          <h4>write</h4>
+          <p><code>api.set(dx,dy,id,{ra,rb}?)</code> → overwrite a cell (new random <code>ra</code>, <code>rb</code> 0 unless given) ·
+             <code>api.move(dx,dy)</code> → move me there (overwrites target, leaves empty behind) ·
+             <code>api.swap(dx,dy)</code> → exchange me with target.
+             <b>move/swap return true and keep following your cell — usually you want to <code>return</code> right after.</b></p>
+          <h4>randomness</h4>
+          <p><code>api.randDir()</code> → -1 or 1 · <code>api.rand(n)</code> → integer 0..n-1 ·
+             <code>api.chance(p)</code> → true with probability p.</p>
+          <h4>query other elements</h4>
+          <p><code>api.isLiquid(id)</code>, <code>api.isGas(id)</code>, <code>api.isPowder(id)</code> ·
+             <code>api.densityOf(id)</code> · <code>api.flammabilityOf(id)</code> ·
+             <code>api.nameOf(id)</code> · <code>api.prop(id,'anyKey')</code> reads any field off another element's
+             definition — add your own fields and rules can react to them. (Fire does exactly this: it
+             reads Plant's custom <code>burnDry</code> field, then scales it by how dry that plant is.)</p>
+          <h4>sliders (no code needed)</h4>
+          <p>Any numeric field can become a slider. Declare it, then list it in a
+             <code>tune</code> block, and read it back inside <code>update</code> as
+             <code>this.&lt;name&gt;</code>:</p>
+          <p><code>speed: 0.4,</code><br>
+             <code>tune: { speed: { min: 0, max: 1, step: 0.05, label: "fall speed" } },</code><br>
+             <code>update(api) { if (api.chance(this.speed)) api.move(0, 1); }</code></p>
+          <p>The panel above builds sliders from that block, and moving one takes effect on the next
+             tick — no recompiling. <b>Use a method (<code>update(api) {…}</code>), not an arrow
+             function</b>, or <code>this</code> will not be your element. Slider positions survive
+             edits elsewhere and are saved with the ruleset when you export.</p>
+          <h4>element definition fields</h4>
+          <p><code>name</code> (also becomes the ALL_CAPS constant other rules use) ·
+             <code>color</code> "#rrggbb" · <code>vary</code> 0..1 color grain ·
+             <code>liquid</code>/<code>gas</code>/<code>powder</code> flags · <code>density</code> number ·
+             <code>flammable</code> 0..1 (chance per tick a neighboring flame ignites it) ·
+             <code>paintRb</code> starting <code>rb</code> for brush-painted cells (default 0) ·
+             <code>tune</code> slider definitions (see above) ·
+             <code>update(api)</code> behavior, optional ·
+             <code>shade(ra,rb,frame,out)</code> optional dynamic color: fill and return <code>out=[r,g,b]</code> ·
+             plus any custom keys you invent.</p>
+          <h4>tips</h4>
+          <p>• <code>return</code> after a move/swap.<br>
+             • <code>rb === 0</code> is a handy "just born" signal (see Fire) — or use <code>rb</code> as a
+               resource tank: Plant's stored moisture, or an animal's energy (eat to fill, burn to live,
+               split to breed, die at zero). Use <code>paintRb</code> so brush-placed cells start stocked.<br>
+             • keep updates small: they run for every cell of that element, every tick.<br>
+             • a runtime error pauses that element's rule (chip turns red) until you apply a fix.</p>
+        </div>
+      </details>
+
+      <details id="share">
+        <summary>share — export / import ruleset</summary>
+        <div class="dbody">
+          <div class="ed-row">
+            <button id="btnExport">show json</button>
+            <button id="btnDownload">download .json</button>
+            <button id="btnCopy">copy</button>
+            <button id="btnImportText">import from text</button>
+            <button id="btnImportFile">import file…</button>
+            <input id="fileIn" type="file" accept=".json,application/json" style="display:none">
+          </div>
+          <textarea id="ioText" spellcheck="false" placeholder="ruleset json appears here — or paste one and hit import from text"></textarea>
+          <div id="ioMsg"></div>
+          <div class="warn">rules are code: only import rulesets you trust. importing replaces all elements and clears the canvas.</div>
+        </div>
+      </details>
+    </aside>
+  </main>
+</div>
+
+<div id="overlay">
+  <div id="modal">
+    <button class="close" id="btnCloseModal">close</button>
+    <h2>sandlab ▓▒░</h2>
+    <p>A falling-sand cellular automaton in one HTML file, inspired by Max Bittker's
+       <b>sandspiel</b> — but pared down to a living world. There are just <b>11 elements</b>,
+       and nearly all of them are there to feed one closed ecosystem. Draw with the mouse,
+       then watch it run. <b>Every element's behavior is plain JavaScript you can edit live</b>
+       in the panel on the right — or invent brand-new ones from scratch.</p>
+    <div class="keys">
+      <span>draw</span><span>left mouse / touch</span>
+      <span>erase</span><span>right mouse drag, or the erase chip</span>
+      <span>space</span><span>pause / play</span>
+      <span>s</span><span>step one tick while paused</span>
+      <span>[ ]</span><span>brush smaller / bigger</span>
+      <span>1–9, 0</span><span>select elements</span>
+      <span>ctrl+↵</span><span>apply rule edits (in the editor)</span>
+    </div>
+    <p><b>The cast.</b> <b>Rock</b> is inert bedrock (and the world's edge). <b>Sand</b> is loose
+       mineral ground. <b>Water</b> is the resource everything runs on, and a <b>Spring</b> renews it —
+       the one input to the whole system, this world's equivalent of sunlight. <b>Plants</b> are the
+       producers: they need a footing of sand or soil and water within reach, and their color shows
+       how hydrated they are. <b>Grazers</b> (teal) eat plants; <b>Predators</b> (pink) eat grazers;
+       both keep energy in <code>rb</code>, breed from a surplus, and starve without one. Whatever
+       dies becomes <b>Litter</b>, which rots into fertile <b>Soil</b> that speeds nearby growth and
+       holds a seed bank. <b>Fire</b> is the disturbance that resets it all.</p>
+    <p><b>The loop.</b> spring → water → plant → grazer → predator → (death) → litter → soil → plant.
+       Nothing is a dead end: matter keeps cycling, and the readout under the canvas tracks the three
+       living populations — watch grazers and predators rise and fall in waves.</p>
+    <p><b>Fire is ecological, not just pretty.</b> How well a plant catches depends on how <i>dry</i>
+       it is, so parched inland scrub goes up while lush riverbank growth barely burns — and water is
+       a firebreak. Animals mostly flee the flames; the ones that don't become litter. Everything
+       burnt leaves ash, which rots into soil, so the land comes back greener than it was.</p>
+    <p><b>Tuning it.</b> You do not have to write code to change how this world behaves. Pick any
+       living element and the <b>tuning</b> sliders appear beside its rule: a plant's growth rate,
+       thirst, crowding limit and flammability; a grazer's metabolism, appetite, breeding rate and
+       wariness; a predator's hunting skill, stalking range and how much better it does against weak
+       prey; how fast litter rots and what fraction returns as soil or water. Drag one and the next
+       tick already behaves differently — nothing is recompiled, so you can steer a running world.
+       The code editor is still there underneath for anything the sliders do not cover.</p>
+    <p><b>Things to try:</b> drag a predator's hunting skill up and watch the herds crash, then
+       collapse · light a fire in dry scrub far from water and watch it stop at the green
+       shoreline · burn a patch and wait for the richer regrowth · drop a predator into a fat herd
+       and watch them scatter · dam a channel with rock to steer where life can grow ·
+       edit Grazer so it eats Litter too (a scavenger) · invent a new element.</p>
+    <p><b>Deploying:</b> this is a single static file with zero dependencies. Rename it
+       <code>index.html</code> and drop it on GitHub Pages, Netlify, itch.io, or any web server —
+       or just double-click it locally. Use <b>share → export</b> to save your custom rules as JSON,
+       and import them after a reload.</p>
+    <p>Engine notes: cells update bottom-up with an alternating scan direction and a clock bit so
+       nothing moves twice per tick — the same trick sandspiel uses.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ============================================================================
+   sandlab — a sandspiel-style falling-sand CA in one file.
+   Layout of this script:
+     1. small helpers
+     2. world state (typed arrays) + tick loop
+     3. the `api` object rules are written against
+     4. element registry: compile / validate / apply / import / export
+     5. BUILTIN element definitions (the editable rule sources live here)
+     6. renderer
+     7. painting + pointer input
+     8. UI wiring (palette, toolbar, editor, share, modal)
+     9. demo scene + boot
+   ========================================================================== */
+
+/* ---------- 1. helpers ---------- */
+const $ = id => document.getElementById(id);
+const rnd256 = () => (Math.random() * 256) | 0;
+const clamp255 = v => v < 0 ? 0 : v > 255 ? 255 : v | 0;
+const LE = new Uint8Array(new Uint32Array([0x0a0b0c0d]).buffer)[0] === 0x0d;
+const pack = LE
+  ? (r, g, b) => (0xff000000 | (b << 16) | (g << 8) | r) >>> 0
+  : (r, g, b) => ((r << 24) | (g << 16) | (b << 8) | 0xff) >>> 0;
+function hexRgb(s) {
+  const m = /^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.exec(String(s).trim());
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h.replace(/./g, c => c + c);
+  const n = parseInt(h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function buildPal(rgb, vary) {
+  const pal = new Uint32Array(32);
+  for (let i = 0; i < 32; i++) {
+    const f = 1 + vary * ((i / 31) * 2 - 1);
+    pal[i] = pack(clamp255(rgb[0] * f), clamp255(rgb[1] * f), clamp255(rgb[2] * f));
+  }
+  return pal;
+}
+function identFor(name) {
+  let s = String(name).toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  if (!s) s = 'X';
+  if (/^[0-9]/.test(s)) s = '_' + s;
+  return s;
+}
+
+/* ---------- 2. world state ---------- */
+let W = 256, H = 256;
+let S, RA, RB, CL;          // species, register a, register b, update clock
+let gen = 0;
+let cx = 0, cy = 0, ci = 0; // cell currently being updated (api anchor)
+
+function allocWorld(n) {
+  W = H = n;
+  S = new Uint8Array(W * H);
+  RA = new Uint8Array(W * H);
+  RB = new Uint8Array(W * H);
+  CL = new Uint8Array(W * H);
+  for (let i = 0; i < RA.length; i++) RA[i] = rnd256();
+  gen = 0;
+  makeBackBuffer();
+}
+function clearWorld() {
+  S.fill(0); RB.fill(0); CL.fill(0);
+  for (let i = 0; i < RA.length; i++) RA[i] = rnd256();
+}
+function setCell(x, y, id) {
+  if (x < 0 || x >= W || y < 0 || y >= H) return;
+  if (id >= EL.length || id < 0) id = 0;
+  const i = y * W + x;
+  S[i] = id; RA[i] = rnd256();
+  RB[i] = (EL[id] && EL[id].def.paintRb ? EL[id].def.paintRb : 0) & 255;
+}
+
+function tick() {
+  gen = (gen + 1) & 255;
+  const U = updaters, ltr = (gen & 1) === 0;
+  for (let y = H - 1; y >= 0; y--) {
+    const row = y * W;
+    if (ltr) { for (let x = 0, i = row; x < W; x++, i++) step(x, y, i, U); }
+    else     { for (let x = W - 1, i = row + W - 1; x >= 0; x--, i--) step(x, y, i, U); }
+  }
+}
+function step(x, y, i, U) {
+  const s = S[i];
+  if (s === 0) return;
+  if (CL[i] === gen) return;
+  CL[i] = gen;
+  const f = U[s];
+  if (!f) return;
+  cx = x; cy = y; ci = i;
+  try { f.call(EL[s].def, api); }
+  catch (err) {
+    EL[s].broken = true;
+    EL[s].error = 'runtime error: ' + (err && err.message ? err.message : err);
+    updaters[s] = null;
+    onElementBroken(s);
+  }
+}
+
+/* ---------- 3. the rule api ---------- */
+const api = {
+  get(dx, dy) {
+    const x = cx + dx, y = cy + dy;
+    if (x < 0 || x >= W || y < 0 || y >= H) return 1; // ROCK sentinel at edges
+    return S[y * W + x];
+  },
+  getRa(dx, dy) {
+    const x = cx + dx, y = cy + dy;
+    if (x < 0 || x >= W || y < 0 || y >= H) return 0;
+    return RA[y * W + x];
+  },
+  getRb(dx, dy) {
+    const x = cx + dx, y = cy + dy;
+    if (x < 0 || x >= W || y < 0 || y >= H) return 0;
+    return RB[y * W + x];
+  },
+  set(dx, dy, id, opts) {
+    const x = cx + dx, y = cy + dy;
+    if (x < 0 || x >= W || y < 0 || y >= H) return false;
+    const i = y * W + x;
+    S[i] = id & 255;
+    RA[i] = opts && opts.ra !== undefined ? opts.ra & 255 : rnd256();
+    RB[i] = opts && opts.rb !== undefined ? opts.rb & 255 : 0;
+    CL[i] = gen;
+    return true;
+  },
+  move(dx, dy) {
+    const x = cx + dx, y = cy + dy;
+    if (x < 0 || x >= W || y < 0 || y >= H) return false;
+    const j = y * W + x, i = ci;
+    S[j] = S[i]; RA[j] = RA[i]; RB[j] = RB[i]; CL[j] = gen;
+    S[i] = 0; RA[i] = rnd256(); RB[i] = 0; CL[i] = gen;
+    cx = x; cy = y; ci = j;
+    return true;
+  },
+  swap(dx, dy) {
+    const x = cx + dx, y = cy + dy;
+    if (x < 0 || x >= W || y < 0 || y >= H) return false;
+    const j = y * W + x, i = ci;
+    const s = S[i], a = RA[i], b = RB[i];
+    S[i] = S[j]; RA[i] = RA[j]; RB[i] = RB[j]; CL[i] = gen;
+    S[j] = s; RA[j] = a; RB[j] = b; CL[j] = gen;
+    cx = x; cy = y; ci = j;
+    return true;
+  },
+  randDir() { return Math.random() < 0.5 ? -1 : 1; },
+  rand(n) { return (Math.random() * n) | 0; },
+  chance(p) { return Math.random() < p; },
+  isLiquid(id) { const e = EL[id]; return !!(e && e.def.liquid); },
+  isGas(id) { const e = EL[id]; return !!(e && e.def.gas); },
+  isPowder(id) { const e = EL[id]; return !!(e && e.def.powder); },
+  densityOf(id) { const e = EL[id]; return (e && e.def.density) || 0; },
+  flammabilityOf(id) { const e = EL[id]; return (e && e.def.flammable) || 0; },
+  prop(id, key) { const e = EL[id]; return e ? e.def[key] : undefined; },
+  nameOf(id) { const e = EL[id]; return e ? e.name : '?'; },
+};
+Object.defineProperties(api, {
+  me: { get: () => S[ci] },
+  ra: { get: () => RA[ci], set: v => { RA[ci] = v & 255; } },
+  rb: { get: () => RB[ci], set: v => { RB[ci] = v & 255; } },
+  x: { get: () => cx },
+  y: { get: () => cy },
+});
+
+/* ---------- 4. element registry ---------- */
+let EL = [];            // id -> {name, ident, idents:Set, src, defaultSrc, draft, def, updateFn, shadeFn, pal, rgb, broken, error, custom}
+let updaters = [];      // id -> update fn (null when none / broken)
+const identOwner = new Map(); // ident string -> element id
+
+function compileSource(src) {
+  const names = [], ids = [];
+  for (const [ident, id] of identOwner) { names.push(ident); ids.push(id); }
+  const maker = new Function(...names, '"use strict"; return (\n' + src + '\n);');
+  return maker(...ids);
+}
+function validateDef(def, id) {
+  if (!def || typeof def !== 'object' || Array.isArray(def))
+    throw new Error('source must evaluate to an object like { name: "...", color: "#...", update(api){...} }');
+  if (typeof def.name !== 'string' || !def.name.trim()) throw new Error('def needs a non-empty "name" string');
+  const rgb = hexRgb(def.color);
+  if (!rgb) throw new Error('def needs a "color" like "#e2b25f"');
+  for (const k of ['vary', 'density', 'flammable', 'paintRb'])
+    if (def[k] !== undefined && typeof def[k] !== 'number') throw new Error('"' + k + '" must be a number');
+  if (def.update !== undefined && typeof def.update !== 'function') throw new Error('"update" must be a function');
+  if (def.shade !== undefined && typeof def.shade !== 'function') throw new Error('"shade" must be a function');
+  if (def.shade) {
+    const out = def.shade(128, 40, 0, [0, 0, 0]);
+    if (!out || out.length < 3 || typeof out[0] !== 'number')
+      throw new Error('"shade" must fill and return its 4th argument: shade(ra,rb,frame,out){ out[0]=r; ... return out; }');
+  }
+  const ident = identFor(def.name);
+  const owner = identOwner.get(ident);
+  if (owner !== undefined && owner !== id)
+    throw new Error('name "' + def.name + '" collides with the existing constant ' + ident);
+  return rgb;
+}
+function installDef(id, def, src, rgb) {
+  const el = EL[id];
+  const ident = identFor(def.name);
+  el.name = def.name;
+  if (!el.idents.has(ident)) { el.idents.add(ident); identOwner.set(ident, id); }
+  el.ident = ident;
+  el.def = def;
+  el.src = src;
+  el.draft = null;
+  el.updateFn = def.update || null;
+  el.shadeFn = def.shade || null;
+  el.rgb = rgb;
+  el.pal = buildPal(rgb, def.vary !== undefined ? def.vary : 0.1);
+  el.broken = false;
+  el.error = null;
+  updaters[id] = el.updateFn;
+}
+/* --- tunable numbers (the sliders) -------------------------------------
+   An element may declare a `tune` block; each entry names a numeric field on
+   the definition and gives it a slider range. Rules read those fields back as
+   `this.<name>`, so moving a slider takes effect on the very next tick with no
+   recompiling. These helpers keep slider positions from being lost whenever
+   something else forces a recompile, and carry them through export/import. */
+function tuneKeys(def) { return def && def.tune ? Object.keys(def.tune) : []; }
+function tuneSnapshot(el) {
+  const keys = tuneKeys(el.def);
+  if (!keys.length) return null;
+  const out = {};
+  for (const k of keys) out[k] = el.def[k];
+  return out;
+}
+function tuneRestore(el, snap) {
+  if (!snap) return;
+  for (const k of tuneKeys(el.def))
+    if (typeof snap[k] === 'number') el.def[k] = snap[k];
+}
+function tuneDelta(el) {
+  // only the values that differ from what the element's own source declares
+  const keys = tuneKeys(el.def);
+  if (!keys.length) return undefined;
+  let base;
+  try { base = compileSource(el.src); } catch (e) { return undefined; }
+  const out = {};
+  let any = false;
+  for (const k of keys) if (base[k] !== el.def[k]) { out[k] = el.def[k]; any = true; }
+  return any ? out : undefined;
+}
+
+function recompileAll(skipId) {
+  for (let id = 0; id < EL.length; id++) {
+    if (id === skipId) continue;
+    const el = EL[id];
+    try {
+      const def = compileSource(el.src);
+      const rgb = validateDef(def, id);
+      const draft = el.draft;
+      const tuned = tuneSnapshot(el);   // keep the user's slider positions
+      installDef(id, def, el.src, rgb);
+      tuneRestore(el, tuned);
+      el.draft = draft;
+    } catch (err) {
+      el.broken = true;
+      el.error = 'recompile failed: ' + (err && err.message ? err.message : err);
+      updaters[id] = null;
+    }
+  }
+}
+function applySource(id, src) {
+  try {
+    const def = compileSource(src);
+    const rgb = validateDef(def, id);
+    installDef(id, def, src, rgb);
+    recompileAll(id);   // so rules pick up new/renamed constants
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: (err && err.message ? err.message : String(err)) };
+  }
+}
+function addElement(src) {
+  if (EL.length >= 255) return { ok: false, error: 'element limit (255) reached' };
+  let n = 1, name;
+  do { name = 'Custom' + n++; } while (identOwner.has(identFor(name)));
+  const template = src || (
+    '{\n' +
+    '  name: "' + name + '",\n' +
+    '  color: "#c05ad4",\n' +
+    '  vary: 0.12,\n' +
+    '  powder: true,\n' +
+    '  density: 4,\n' +
+    '  update(api) {\n' +
+    '    // starts as a basic powder - make it your own!\n' +
+    '    const below = api.get(0, 1);\n' +
+    '    if (below === EMPTY) return api.move(0, 1);\n' +
+    '    const dx = api.randDir();\n' +
+    '    if (api.get(dx, 1) === EMPTY) return api.move(dx, 1);\n' +
+    '  }\n' +
+    '}'
+  );
+  const id = EL.length;
+  EL.push(blankEl(id, template, true));
+  updaters.push(null);
+  const res = applySource(id, template);
+  if (!res.ok) { EL.pop(); updaters.pop(); return res; }
+  return { ok: true, id };
+}
+function blankEl(id, src, custom) {
+  return { name: '#' + id, ident: null, idents: new Set(), src, defaultSrc: src, draft: null,
+    def: {}, updateFn: null, shadeFn: null, pal: buildPal([255, 0, 255], 0), rgb: [255, 0, 255],
+    broken: false, error: null, custom: !!custom };
+}
+function loadRuleset(entries) {
+  // entries: [{name, src}] — two-pass: register all idents first so rules can
+  // reference each other's constants, then compile everything.
+  const oldEL = EL, oldUp = updaters, oldIdent = new Map(identOwner);
+  try {
+    EL = []; updaters = []; identOwner.clear();
+    entries.forEach((e, id) => {
+      const ident = identFor(e.name);
+      if (identOwner.has(ident)) throw new Error('duplicate element name: ' + e.name);
+      identOwner.set(ident, id);
+      const el = blankEl(id, e.src, !!e.custom);
+      el.name = e.name; el.ident = ident; el.idents.add(ident);
+      EL.push(el); updaters.push(null);
+    });
+    EL.forEach((el, id) => {
+      const def = compileSource(el.src);
+      const rgb = validateDef(def, id);
+      if (identFor(def.name) !== el.ident)
+        throw new Error('element ' + id + ': "name" in source (' + def.name + ') must match its declared name (' + el.name + ')');
+      installDef(id, def, el.src, rgb);
+      tuneRestore(el, entries[id].tuned);   // slider positions saved with the ruleset
+      el.defaultSrc = el.src;
+    });
+    return { ok: true };
+  } catch (err) {
+    EL = oldEL; updaters = oldUp;
+    identOwner.clear(); for (const [k, v] of oldIdent) identOwner.set(k, v);
+    return { ok: false, error: (err && err.message ? err.message : String(err)) };
+  }
+}
+function exportRules() {
+  return JSON.stringify({
+    app: 'sandlab-rules', version: 1,
+    elements: EL.map(el => ({ name: el.name, src: el.src, custom: el.custom || undefined,
+                              tuned: tuneDelta(el) })),
+  }, null, 2);
+}
+function importRules(json) {
+  let data;
+  try { data = JSON.parse(json); } catch (e) { return { ok: false, error: 'not valid JSON: ' + e.message }; }
+  if (!data || data.app !== 'sandlab-rules' || !Array.isArray(data.elements) || data.elements.length < 2)
+    return { ok: false, error: 'not a sandlab ruleset (expected {app:"sandlab-rules", elements:[...]})' };
+  for (const e of data.elements)
+    if (typeof e.name !== 'string' || typeof e.src !== 'string')
+      return { ok: false, error: 'each element needs {name, src}' };
+  const res = loadRuleset(data.elements);
+  if (!res.ok) return res;
+  clearWorld();
+  return { ok: true, count: data.elements.length };
+}
+
+/* ---------- 5. built-in elements (id order matters: 0=Empty, 1=Wall) ---------- */
+const BUILTIN = [
+
+/* Every element below is a plain object. Numbers listed in its `tune` block
+   become SLIDERS in the panel on the right, and the rule reads them back with
+   `this.<name>` - so dragging a slider changes behaviour instantly, with no
+   recompiling. Add a `tune` entry to any element (including your own) and it
+   gets sliders too. */
+
+{ name: 'Empty', src:
+`{
+  name: "Empty",
+  color: "#10101a",
+  vary: 0.05
+  // The background. No update - nothing happens here.
+  // (Its chip doubles as the eraser.)
+}` },
+
+{ name: 'Rock', src:
+`{
+  name: "Rock",
+  color: "#6b6f7e",
+  vary: 0.10
+  // Bedrock: static and indestructible, with no update function at all.
+  // Nothing moves it, eats it, or burns it - and reads past the edge of the
+  // world return ROCK too, so the map is walled in stone.
+  // Draw with it to carve basins that hold water, or ridges that block fire.
+}` },
+
+{ name: 'Sand', src:
+`{
+  name: "Sand",
+  color: "#dfab52",
+  vary: 0.16,
+  powder: true,
+  density: 4,
+  update(api) {
+    // fall straight down; sink through lighter liquids; else roll diagonally
+    const below = api.get(0, 1);
+    if (below === EMPTY) return api.move(0, 1);
+    if (api.isLiquid(below) && api.densityOf(below) < this.density && api.chance(0.55))
+      return api.swap(0, 1);
+    const dx = api.randDir();
+    if (api.get(dx, 1) === EMPTY && api.get(dx, 0) === EMPTY) return api.move(dx, 1);
+    if (api.get(-dx, 1) === EMPTY && api.get(-dx, 0) === EMPTY) return api.move(-dx, 1);
+  }
+}` },
+
+{ name: 'Water', src:
+`{
+  name: "Water",
+  color: "#3f7de0",
+  vary: 0.10,
+  liquid: true,
+  density: 2,
+  update(api) {
+    // fall, sink through lighter liquids, then flow sideways
+    const below = api.get(0, 1);
+    if (below === EMPTY) return api.move(0, 1);
+    if (api.isLiquid(below) && api.densityOf(below) < this.density && api.chance(0.3))
+      return api.swap(0, 1);
+    const dx = api.randDir();
+    if (api.get(dx, 1) === EMPTY) return api.move(dx, 1);
+    if (api.get(-dx, 1) === EMPTY) return api.move(-dx, 1);
+    if (api.get(dx, 0) === EMPTY) return api.move(dx, 0);
+    if (api.get(-dx, 0) === EMPTY) return api.move(-dx, 0);
+  }
+}` },
+
+{ name: 'Spring', src:
+`{
+  name: "Spring",
+  color: "#2b6fb0",
+  vary: 0.08,
+  // a fixed water source - the renewable input the whole ecosystem runs on
+  // (this world's equivalent of rainfall). It never moves, and it pauses once
+  // its surroundings are already wet, so sitting at a lake's surface it acts
+  // as a water table: quiet when submerged, trickling again as the lake drops.
+  flow: 0.5,          // how fast it pushes out water
+  tune: {
+    flow: { min: 0, max: 1, step: 0.05, label: "flow rate" }
+  },
+  update(api) {
+    let wet = 0;
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++)
+        if (api.get(dx, dy) === WATER) wet++;
+    if (wet < 4 && api.chance(this.flow)) {
+      const dirs = [[0, 1], [1, 0], [-1, 0], [0, -1]];
+      const d = dirs[api.rand(4)];
+      if (api.get(d[0], d[1]) === EMPTY) return api.set(d[0], d[1], WATER);
+    }
+  }
+}` },
+
+{ name: 'Plant', src:
+`{
+  name: "Plant",
+  color: "#46b558",
+  vary: 0.22,
+  paintRb: 35,   // seedlings from the brush start with a small water reserve
+
+  // --- sliders ---
+  growth: 0.06,     // chance of sprouting into a free neighbouring cell
+  thirst: 0.05,     // how fast stored moisture is burnt up
+  drought: 0.03,    // chance per tick that a bone-dry plant wilts
+  crowdLimit: 5,    // more plant neighbours than this and it dies back
+  burnDry: 0.45,    // how fiercely it burns once parched (Fire reads this)
+  tune: {
+    growth:     { min: 0, max: 0.30, step: 0.005, label: "growth rate" },
+    thirst:     { min: 0, max: 0.30, step: 0.005, label: "thirst" },
+    drought:    { min: 0, max: 0.20, step: 0.005, label: "drought death" },
+    crowdLimit: { min: 2, max: 8,    step: 1,     label: "crowding limit" },
+    burnDry:    { min: 0, max: 1,    step: 0.05,  label: "flammability" }
+  },
+
+  shade(ra, rb, frame, out) {
+    // colour by hydration: lush green when moist, dry straw when parched
+    const t = rb > 110 ? 1 : rb / 110;
+    const f = 0.85 + 0.30 * (ra / 255);
+    out[0] = (148 + (70 - 148) * t) * f;
+    out[1] = (132 + (181 - 132) * t) * f;
+    out[2] = (66 + (88 - 66) * t) * f;
+    return out;
+  },
+
+  update(api) {
+    // rb = stored moisture. Plants must drink to grow: water is absorbed,
+    // piped through the colony, and spent on new growth. Without it they stop
+    // growing, fade to straw and wilt. They also need footing - sand, soil or
+    // another plant below - or they crumble.
+
+    const grip = id => id === SAND || id === PLANT || id === SOIL;
+    const rooted = grip(api.get(-1, 1)) || grip(api.get(0, 1)) || grip(api.get(1, 1));
+    if (!rooted && api.chance(0.5)) return api.set(0, 0, LITTER);
+
+    let crowd = 0;
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++)
+        if ((dx || dy) && api.get(dx, dy) === PLANT) crowd++;
+
+    // DEATHS - overcrowding, loneliness, thirst. All leave litter behind.
+    if (crowd > this.crowdLimit && api.chance(0.25)) return api.set(0, 0, LITTER);
+    if (crowd < 2 && api.chance(0.005)) return api.set(0, 0, LITTER);
+    if (api.rb === 0 && api.chance(this.drought)) return api.set(0, 0, LITTER);
+
+    // METABOLISM - staying alive costs moisture. Together with the vascular
+    // sharing below, this is what limits how far from water a plant can live.
+    if (api.rb > 0 && api.chance(this.thirst)) api.rb = api.rb - 1;
+
+    // DRINK - absorb a neighbouring water cell, if there is room to store it
+    if (api.rb <= 135) {
+      const wx = api.rand(3) - 1, wy = api.rand(3) - 1;
+      if ((wx || wy) && api.get(wx, wy) === WATER && api.chance(0.3)) {
+        api.set(wx, wy, EMPTY);
+        api.rb = Math.min(255, api.rb + 120);
+      }
+    }
+
+    // SHARE - vascular flow toward a drier neighbour
+    const sx = api.rand(3) - 1, sy = api.rand(3) - 1;
+    if ((sx || sy) && api.get(sx, sy) === PLANT) {
+      const theirs = api.getRb(sx, sy);
+      if (api.rb > theirs + 20) {
+        const give = (api.rb - theirs) >> 1;
+        api.set(sx, sy, PLANT, { ra: api.getRa(sx, sy), rb: theirs + give });
+        api.rb = api.rb - give;
+      }
+    }
+
+    // BIRTH - growth costs water and a seedling needs footing. Sprouting into
+    // water consumes it; sprouting into air spends half of my own moisture.
+    const bx = api.rand(3) - 1, by = api.rand(3) - 1;
+    if (bx || by) {
+      const spot = api.get(bx, by);
+      const seated = grip(api.get(bx - 1, by + 1)) || grip(api.get(bx, by + 1)) || grip(api.get(bx + 1, by + 1));
+      if (seated && (spot === WATER || (spot === EMPTY && api.rb >= 60))) {
+        let n = 0;
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++)
+            if ((dx || dy) && api.get(bx + dx, by + dy) === PLANT) n++;
+        const rich = api.get(bx - 1, by + 1) === SOIL || api.get(bx, by + 1) === SOIL || api.get(bx + 1, by + 1) === SOIL;
+        const b = rich ? 1.8 : 1;    // fertile soil speeds growth
+        if (spot === WATER) {
+          if (n >= 2 && n <= 4 && api.chance(this.growth * 2.5 * b)) return api.set(bx, by, PLANT, { rb: 120 });
+        } else if ((n === 1 && api.chance(this.growth * 0.33 * b)) ||
+                   (n >= 2 && n <= 4 && api.chance(this.growth * b))) {
+          const dowry = api.rb >> 1;
+          api.rb = api.rb - dowry;
+          return api.set(bx, by, PLANT, { rb: dowry });
+        }
+      }
+    }
+  }
+}` },
+
+{ name: 'Litter', src:
+`{
+  name: "Litter",
+  color: "#7a5230",
+  vary: 0.18,
+  powder: true,
+  density: 4,
+  flammable: 0.18,
+  // Dead organic matter - what plants and animals leave behind. It settles,
+  // lingers as a leaf-litter layer, then rots: into nutrients (Soil), into the
+  // moisture the body held (Water, which drains back downhill and is what
+  // closes the water loop), or away to nothing.
+  rotRate: 0.28,   // how fast it breaks down
+  toSoil: 38,      // % of rotted litter that becomes soil
+  toWater: 22,     // % that returns as water
+  tune: {
+    rotRate: { min: 0.02, max: 1,   step: 0.02, label: "rot speed" },
+    toSoil:  { min: 0,    max: 100, step: 1,    label: "% to soil" },
+    toWater: { min: 0,    max: 100, step: 1,    label: "% to water" }
+  },
+  update(api) {
+    if (api.rb === 0) api.rb = 150 + api.rand(105);
+    if (api.chance(this.rotRate)) api.rb = api.rb - 1;
+    if (api.rb <= 1) {
+      const roll = api.rand(100);
+      return api.set(0, 0, roll < this.toSoil ? SOIL
+                         : roll < this.toSoil + this.toWater ? WATER : EMPTY);
+    }
+    const below = api.get(0, 1);
+    if (below === EMPTY) return api.move(0, 1);
+    if (api.isLiquid(below) && api.chance(0.5)) return api.swap(0, 1);
+    const dx = api.randDir();
+    if (api.get(dx, 1) === EMPTY && api.get(dx, 0) === EMPTY) return api.move(dx, 1);
+  }
+}` },
+
+{ name: 'Soil', src:
+`{
+  name: "Soil",
+  color: "#3c2c1a",
+  vary: 0.22,
+  powder: true,
+  density: 4,
+  // Rich earth from decomposition. Plants root in it like sand and grow faster
+  // beside it, and damp soil holds a seed bank that can sprout new plants - so
+  // producers recover after a wipeout. Nutrients slowly leach back to sand.
+  germinate: 0.006,   // chance damp soil sprouts a plant
+  leach: 0.0006,      // chance it reverts to plain sand
+  tune: {
+    germinate: { min: 0, max: 0.05, step: 0.001,  label: "seed bank" },
+    leach:     { min: 0, max: 0.01, step: 0.0002, label: "nutrient loss" }
+  },
+  update(api) {
+    const below = api.get(0, 1);
+    if (below === EMPTY) return api.move(0, 1);
+    if (api.isLiquid(below) && api.chance(0.2)) return api.swap(0, 1);
+    const dx = api.randDir();
+    if (api.get(dx, 1) === EMPTY && api.get(dx, 0) === EMPTY) return api.move(dx, 1);
+    // SEED BANK - open air above and water within reach: sprout a plant
+    if (api.get(0, -1) === EMPTY) {
+      let water = false;
+      for (let d = -1; d <= 1; d++)
+        if (api.get(d, 0) === WATER || api.get(d, 1) === WATER) { water = true; break; }
+      if (water && api.chance(this.germinate)) return api.set(0, -1, PLANT, { rb: 110 });
+    }
+    if (api.chance(this.leach)) return api.set(0, 0, SAND);
+  }
+}` },
+
+{ name: 'Grazer', src:
+`{
+  name: "Grazer",
+  color: "#39d7c9",
+  paintRb: 160,   // rb = stored energy (a full belly is 255)
+
+  // --- sliders ---
+  metabolism: 0.05,   // energy burnt per tick just staying alive
+  bite: 14,           // energy gained per mouthful
+  damage: 0.35,       // chance a mouthful destroys the plant cell
+  breedRate: 0.025,   // fecundity once well fed
+  fear: 0.7,          // chance of spotting danger and bolting
+  tune: {
+    metabolism: { min: 0, max: 0.40, step: 0.005, label: "metabolism" },
+    bite:       { min: 1, max: 60,   step: 1,     label: "energy per bite" },
+    damage:     { min: 0, max: 1,    step: 0.05,  label: "damage to plants" },
+    breedRate:  { min: 0, max: 0.20, step: 0.005, label: "breeding rate" },
+    fear:       { min: 0, max: 1,    step: 0.05,  label: "wariness" }
+  },
+
+  shade(ra, rb, frame, out) {
+    // pale and bright when well fed, dim teal when starving
+    const t = rb / 200 > 1 ? 1 : rb / 200;
+    const k = 0.4 + 0.6 * t;
+    out[0] = 40 * k + 150 * t;
+    out[1] = 215 * k;
+    out[2] = 200 * k;
+    return out;
+  },
+
+  update(api) {
+    // A herbivore. It mostly TRIMS plants rather than destroying them, and
+    // never strips the last sparse sprigs - which is what keeps a pasture
+    // recoverable and stops the herd eating itself into oblivion.
+
+    if (api.rb <= 1) return api.set(0, 0, LITTER);          // starved
+    if (api.chance(this.metabolism)) api.rb = api.rb - 1;
+
+    // FLEE - a landscape of fear: predators and fire nearby send it bolting,
+    // and a fleeing grazer will not stop to eat. Panic is not perfect, which
+    // is what keeps hunting viable.
+    let ax = 0, ay = 0, scared = false;
+    for (let dy = -4; dy <= 4; dy++)
+      for (let dx = -4; dx <= 4; dx++) {
+        if (!dx && !dy) continue;
+        const n = api.get(dx, dy);
+        if (n === PREDATOR || n === FIRE) { ax += dx; ay += dy; scared = true; }
+      }
+    if (scared && api.chance(this.fear)) {
+      const away = ax > 0 ? -1 : ax < 0 ? 1 : api.randDir();
+      if (api.get(away, 0) === EMPTY) return api.move(away, 0);
+      if (api.get(away, -1) === EMPTY) return api.move(away, -1);
+      if (api.get(away, 1) === EMPTY) return api.move(away, 1);
+      if (api.get(-away, 0) === EMPTY) return api.move(-away, 0);
+    }
+
+    // look around: how crowded is it, and is there anything to eat?
+    let crowd = 0, px = 0, py = 0, food = false;
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const n = api.get(dx, dy);
+        if (n === GRAZER) crowd++;
+        else if (n === PLANT) { px = dx; py = dy; food = true; }
+      }
+
+    // EAT - a mouthful always feeds it, but only a plant in a dense clump
+    // (4+ plant neighbours) can actually be destroyed
+    if (food && api.rb < 235 && api.chance(0.4)) {
+      api.rb = Math.min(255, api.rb + this.bite);
+      let clump = 0;
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++)
+          if ((dx || dy) && api.get(px + dx, py + dy) === PLANT) clump++;
+      if (clump >= 4 && api.chance(this.damage)) api.set(px, py, EMPTY);
+      return;
+    }
+
+    // BREED - well fed and not crowded; the calf takes half the energy
+    if (api.rb >= 200 && crowd <= 3 && api.chance(this.breedRate)) {
+      const rx = api.rand(3) - 1, ry = api.rand(3) - 1;
+      if ((rx || ry) && api.get(rx, ry) === EMPTY) {
+        const half = api.rb >> 1;
+        api.rb = api.rb - half;
+        return api.set(rx, ry, GRAZER, { rb: half });
+      }
+    }
+
+    // MOVE - gravity first, then toward greenery, then wander
+    if (api.get(0, 1) === EMPTY) return api.move(0, 1);
+    let dir = api.randDir();
+    if (api.get(2 * dir, 0) === PLANT || api.get(dir, -1) === PLANT) { /* that way */ }
+    else if (api.get(-2 * dir, 0) === PLANT || api.get(-dir, -1) === PLANT) dir = -dir;
+    if (api.get(dir, 0) === EMPTY) return api.move(dir, 0);
+    if (api.get(dir, -1) === EMPTY && api.chance(0.5)) return api.move(dir, -1);
+    if (api.get(-dir, 0) === EMPTY) return api.move(-dir, 0);
+  }
+}` },
+
+{ name: 'Predator', src:
+`{
+  name: "Predator",
+  color: "#ff3d7f",
+  paintRb: 120,   // rb = stored energy
+
+  // --- sliders ---
+  metabolism: 0.13,   // energy burnt per tick while hunting (grazers: 0.05)
+  hunt: 0.07,         // chance of catching a healthy, well-fed grazer
+  weakBonus: 0.28,    // extra chance against a starving one
+  meal: 85,           // energy gained from a kill
+  breedRate: 0.012,   // fecundity once gorged
+  sense: 7,           // how far it can spot prey (grazers panic at 4)
+  tune: {
+    metabolism: { min: 0, max: 0.40, step: 0.005, label: "metabolism" },
+    hunt:       { min: 0, max: 0.60, step: 0.01,  label: "hunting skill" },
+    weakBonus:  { min: 0, max: 0.60, step: 0.01,  label: "vs weak prey" },
+    meal:       { min: 10, max: 160, step: 5,     label: "energy per kill" },
+    breedRate:  { min: 0, max: 0.10, step: 0.002, label: "breeding rate" },
+    sense:      { min: 1, max: 12,   step: 1,     label: "stalking range" }
+  },
+
+  shade(ra, rb, frame, out) {
+    const t = rb / 200 > 1 ? 1 : rb / 200;
+    const k = 0.45 + 0.55 * t;
+    out[0] = 255 * k;
+    out[1] = 61 * k + 35 * (1 - t);
+    out[2] = 127 * k;
+    return out;
+  },
+
+  update(api) {
+    // The apex layer, and deliberately a poor hunter: most pounces fail. It
+    // mostly culls the weak, burns energy far faster than its prey, and only
+    // breeds after real hunting success - so its numbers track the herds.
+
+    if (api.rb <= 1) return api.set(0, 0, LITTER);          // starved
+
+    // look around: crowding, adjacent prey, adjacent carcass - and further
+    // out, the nearest grazer worth stalking. A predator must see farther
+    // than its prey's panic radius or it could never close on a fleeing herd.
+    let crowd = 0, gx = 0, gy = 0, prey = false, lx = 0, ly = 0, carc = false;
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const n = api.get(dx, dy);
+        if (n === PREDATOR) crowd++;
+        else if (n === GRAZER) { gx = dx; gy = dy; prey = true; }
+        else if (n === LITTER) { lx = dx; ly = dy; carc = true; }
+      }
+    const R = this.sense;
+    let bx = 0, by = 0, bd = 999;
+    for (let dy = -R; dy <= R; dy++)
+      for (let dx = -R; dx <= R; dx++)
+        if ((dx || dy) && api.get(dx, dy) === GRAZER) { const d = dx * dx + dy * dy; if (d < bd) { bd = d; bx = dx; by = dy; } }
+    const hunting = bd < 999;
+
+    // METABOLISM - stalking is expensive. With no prey in sight a starving
+    // predator drops into TORPOR and burns almost nothing, which is what
+    // carries a scattered few through a crash in the herds.
+    const torpid = !hunting && api.rb < 60;
+    if (api.chance(torpid ? 0.02 : this.metabolism)) api.rb = api.rb - 1;
+
+    // POUNCE - prey deep in vegetation (3+ plant neighbours) is safe outright,
+    // and a fat healthy grazer usually outruns the charge while a starving one
+    // rarely does. Kills are rare, so a kill is a big meal.
+    if (prey) {
+      const condition = api.getRb(gx, gy) / 255;      // 1 = fat and fast
+      if (api.chance(this.hunt + this.weakBonus * (1 - condition))) {
+        let cover = 0;
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++)
+            if ((dx || dy) && api.get(gx + dx, gy + dy) === PLANT) cover++;
+        if (cover < 3) { api.move(gx, gy); api.rb = Math.min(255, api.rb + this.meal); return; }
+      }
+    }
+
+    // SCAVENGE - carrion keeps a hungry predator alive, but its cap sits two
+    // full kills below the breeding threshold, so it can never breed them
+    if (carc && api.rb < 120) { api.set(lx, ly, EMPTY); api.rb = Math.min(255, api.rb + 20); return; }
+
+    // BREED - only on the surplus of real hunting, and only when not crowded
+    if (api.rb >= 235 && crowd <= 1 && api.chance(this.breedRate)) {
+      const rx = api.rand(3) - 1, ry = api.rand(3) - 1;
+      if ((rx || ry) && api.get(rx, ry) === EMPTY) {
+        const half = api.rb >> 1;
+        api.rb = api.rb - half;
+        return api.set(rx, ry, PREDATOR, { rb: half });
+      }
+    }
+
+    // MOVE - hungry? head for the nearest carcass. Otherwise stalk the grazer
+    // spotted earlier. Otherwise wander.
+    if (api.rb < 120) {
+      let lbx = 0, lby = 0, lbd = 999;
+      for (let dy = -16; dy <= 16; dy++)
+        for (let dx = -16; dx <= 16; dx++)
+          if ((dx || dy) && api.get(dx, dy) === LITTER) { const d = dx * dx + dy * dy; if (d < lbd) { lbd = d; lbx = dx; lby = dy; } }
+      if (lbd < 999) {
+        const sx = lbx > 0 ? 1 : lbx < 0 ? -1 : 0, sy = lby > 0 ? 1 : lby < 0 ? -1 : 0;
+        if (sx && Math.abs(lbx) >= Math.abs(lby) && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
+        if (sy && api.get(0, sy) === EMPTY) return api.move(0, sy);
+        if (sx && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
+        if ((sx || sy) && api.get(sx, sy) === EMPTY) return api.move(sx, sy);
+      }
+    }
+    if (hunting) {
+      const sx = bx > 0 ? 1 : bx < 0 ? -1 : 0, sy = by > 0 ? 1 : by < 0 ? -1 : 0;
+      if (sx && Math.abs(bx) >= Math.abs(by) && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
+      if (sy && api.get(0, sy) === EMPTY) return api.move(0, sy);
+      if (sx && api.get(sx, 0) === EMPTY) return api.move(sx, 0);
+      if ((sx || sy) && api.get(sx, sy) === EMPTY) return api.move(sx, sy);
+    }
+    if (api.get(0, 1) === EMPTY && api.chance(0.5)) return api.move(0, 1);
+    const d = api.randDir();
+    if (api.get(d, 0) === EMPTY) return api.move(d, 0);
+    if (api.get(0, 1) === EMPTY) return api.move(0, 1);
+  }
+}` },
+
+{ name: 'Fire', src:
+`{
+  name: "Fire",
+  color: "#ff9a3c",
+  life: 42,     // how long a flame burns
+  ash: 0.35,    // chance a spent flame leaves ash behind
+  tune: {
+    life: { min: 5, max: 120, step: 5,    label: "flame lifetime" },
+    ash:  { min: 0, max: 1,   step: 0.05, label: "ash left behind" }
+  },
+  shade(ra, rb, frame, out) {
+    // young flame is bright yellow, dying embers fade to deep red
+    const t = rb === 0 ? 1 : rb / 55;
+    out[0] = 255;
+    out[1] = 60 + 195 * t;
+    out[2] = 90 * t * t;
+    return out;
+  },
+  update(api) {
+    // WILDFIRE - the disturbance that resets the landscape. It does not burn
+    // everything equally: how readily a plant catches depends on how DRY it
+    // is, so parched scrub goes up while lush riverbank growth barely catches.
+    // Water is a firebreak. What burns leaves ash (Litter), which rots into
+    // Soil - so a burnt landscape comes back richer than it was.
+
+    if (api.rb === 0) api.rb = Math.max(3, Math.round(this.life * 0.75) + api.rand(Math.max(1, Math.round(this.life * 0.5))));
+    api.rb--;
+    if (api.rb <= 1) return api.set(0, 0, api.chance(this.ash) ? LITTER : EMPTY);
+
+    let fuel = false;   // is there anything here worth burning?
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const n = api.get(dx, dy);
+        if (n === WATER) return api.set(0, 0, EMPTY);        // quenched
+        if (n === PLANT) {
+          // dryness from the plant's own moisture, squared - so anything well
+          // watered is effectively fireproof
+          const moist = api.getRb(dx, dy);
+          const dry = moist >= 110 ? 0 : 1 - moist / 110;
+          const p = (api.prop(PLANT, "burnDry") || 0.3) * dry * dry;
+          if (p > 0) { fuel = true; if (api.chance(p)) api.set(dx, dy, FIRE); }
+        } else if (n === GRAZER || n === PREDATOR) {
+          if (api.chance(0.2)) api.set(dx, dy, LITTER);      // caught in the blaze
+        } else {
+          const f = api.flammabilityOf(n);
+          if (f > 0) { fuel = true; if (api.chance(f)) api.set(dx, dy, FIRE); }
+        }
+      }
+    }
+
+    // a flame stays on its fuel and works through it; only with nothing left
+    // to burn does it flicker up and away
+    if (!fuel && api.chance(0.5)) {
+      const dx = api.randDir();
+      if (api.get(0, -1) === EMPTY && api.chance(0.6)) return api.move(0, -1);
+      if (api.get(dx, -1) === EMPTY) return api.move(dx, -1);
+    }
+  }
+}` },
+];
+
+/* ---------- 6. renderer ---------- */
+const view = $('view');
+const vctx = view.getContext('2d');
+let back, bctx, img, buf32;
+const scratch = [0, 0, 0];
+let frame = 0;
+
+function makeBackBuffer() {
+  back = document.createElement('canvas');
+  back.width = W; back.height = H;
+  bctx = back.getContext('2d');
+  img = bctx.createImageData(W, H);
+  buf32 = new Uint32Array(img.data.buffer);
+}
+function render() {
+  const N = W * H;
+  let sid = 0;
+  try {
+    for (let i = 0; i < N; i++) {
+      const e = EL[S[i]] || EL[0];
+      if (e.shadeFn) {
+        sid = S[i];
+        const c = e.shadeFn(RA[i], RB[i], frame, scratch) || scratch;
+        buf32[i] = pack(clamp255(c[0]), clamp255(c[1]), clamp255(c[2]));
+      } else {
+        buf32[i] = e.pal[RA[i] & 31];
+      }
+    }
+  } catch (err) {
+    const el = EL[sid];
+    el.shadeFn = null; el.broken = true;
+    el.error = 'shade error: ' + (err && err.message ? err.message : err);
+    onElementBroken(sid);
+  }
+  bctx.putImageData(img, 0, 0);
+  vctx.imageSmoothingEnabled = false;
+  vctx.drawImage(back, 0, 0, view.width, view.height);
+  if (hover) {
+    const sc = view.width / W;
+    vctx.beginPath();
+    vctx.arc((curX + 0.5) * sc, (curY + 0.5) * sc, Math.max(brushR, 0.6) * sc, 0, 6.2832);
+    vctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    vctx.lineWidth = Math.max(1, sc * 0.35);
+    vctx.stroke();
+  }
+}
+function fitView() {
+  const wrap = $('canvasWrap');
+  const px = Math.max(1, Math.round(wrap.clientWidth * (window.devicePixelRatio || 1)));
+  if (view.width !== px) { view.width = px; view.height = px; }
+}
+
+/* ---------- 7. painting + input ---------- */
+let brushR = 5, selId = 2, painting = false, eraseDrag = false;
+let curX = 0, curY = 0, hover = false, lastPX = null, lastPY = null;
+
+function paint(px, py, r, id) {
+  if (!(id >= 0 && id < EL.length)) return;
+  const rr = r * r;
+  const prob = (id <= 1 || r < 2) ? 1 : 0.5; // sprinkle loose matter, solid for wall/erase
+  const prb = (EL[id].def.paintRb ? EL[id].def.paintRb : 0) & 255;
+  for (let dy = -r; dy <= r; dy++) {
+    const y = py + dy;
+    if (y < 0 || y >= H) continue;
+    for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dy * dy > rr) continue;
+      const x = px + dx;
+      if (x < 0 || x >= W) continue;
+      const i = y * W + x;
+      if (id === 0) { if (S[i] !== 0) { S[i] = 0; RA[i] = rnd256(); RB[i] = 0; } continue; }
+      if (id !== 1 && S[i] !== 0) continue;         // only wall paints over stuff
+      if (Math.random() > prob) continue;
+      S[i] = id; RA[i] = rnd256(); RB[i] = prb; CL[i] = gen;
+    }
+  }
+}
+function paintLine(x0, y0, x1, y1, r, id) {
+  const dx = x1 - x0, dy = y1 - y0;
+  const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / Math.max(1, r * 0.5)));
+  for (let s = 0; s <= steps; s++)
+    paint(Math.round(x0 + dx * s / steps), Math.round(y0 + dy * s / steps), r, id);
+}
+function evtCell(e) {
+  const rect = view.getBoundingClientRect();
+  return [
+    Math.floor((e.clientX - rect.left) / rect.width * W),
+    Math.floor((e.clientY - rect.top) / rect.height * H),
+  ];
+}
+view.addEventListener('contextmenu', e => e.preventDefault());
+view.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  view.setPointerCapture(e.pointerId);
+  painting = true;
+  eraseDrag = (e.buttons & 2) !== 0;
+  const [x, y] = evtCell(e);
+  lastPX = x; lastPY = y; curX = x; curY = y; hover = true;
+  paint(x, y, brushR, eraseDrag ? 0 : selId);
+});
+view.addEventListener('pointermove', e => {
+  const [x, y] = evtCell(e);
+  curX = x; curY = y; hover = true;
+  if (!painting) return;
+  paintLine(lastPX, lastPY, x, y, brushR, eraseDrag ? 0 : selId);
+  lastPX = x; lastPY = y;
+});
+const endStroke = e => { painting = false; lastPX = lastPY = null; };
+view.addEventListener('pointerup', endStroke);
+view.addEventListener('pointercancel', endStroke);
+view.addEventListener('pointerleave', () => { hover = false; });
+view.addEventListener('pointerenter', () => { hover = true; });
+
+/* ---------- 8. UI ---------- */
+let playing = true, speed = 1, acc = 0;
+let frames = 0, ticks = 0, lastFpsT = performance.now();
+
+function rebuildPalette() {
+  const pal = $('palette');
+  pal.innerHTML = '';
+  EL.forEach((el, id) => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (id === selId ? ' sel' : '') + (el.broken ? ' broken' : '');
+    b.dataset.id = id;
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = 'rgb(' + el.rgb.join(',') + ')';
+    b.appendChild(dot);
+    b.appendChild(document.createTextNode(id === 0 ? 'erase' : el.name.toLowerCase()));
+    b.title = el.broken ? el.error : ('select ' + el.name);
+    b.addEventListener('click', () => selectElement(id));
+    pal.appendChild(b);
+  });
+  const sel = $('edSelect');
+  sel.innerHTML = '';
+  EL.forEach((el, id) => {
+    const o = document.createElement('option');
+    o.value = id;
+    o.textContent = (el.broken ? '⚠ ' : '') + el.name + (el.custom ? ' *' : '');
+    sel.appendChild(o);
+  });
+  sel.value = selId;
+}
+function selectElement(id) {
+  selId = id;
+  const el = EL[id];
+  $('edSrc').value = el.draft !== null && el.draft !== undefined ? el.draft : el.src;
+  $('edMeta').innerHTML = 'id ' + id + ' · other rules see this element as the constant <b>' + (el.ident || '?') + '</b>' +
+    (id === 0 ? ' · this is the background / eraser' : '') + (id === 1 ? ' · also returned for off-grid reads (the world edge)' : '');
+  setMsg(el.broken ? el.error : '', el.broken ? 'err' : '');
+  renderTuning(id);
+  rebuildPalette();
+}
+function fmtTune(v, step) {
+  const d = step >= 1 ? 0 : (String(step).split('.')[1] || '').length;
+  return v.toFixed(d);
+}
+function renderTuning(id) {
+  const el = EL[id], body = $('tuneBody'), sub = $('tuneSub');
+  body.innerHTML = '';
+  const spec = el.def && el.def.tune;
+  if (!spec || !Object.keys(spec).length) {
+    sub.textContent = '';
+    body.innerHTML = '<div class="tune-none">' + el.name + ' has no tunable numbers yet. ' +
+      'Add a <code>tune</code> block to its rule — e.g. <code>tune: { speed: { min: 0, max: 1, step: 0.05 } }</code> ' +
+      '— and read it back as <code>this.speed</code> to get sliders here.</div>';
+    return;
+  }
+  sub.textContent = 'drag to change behaviour — live';
+  let base = null;
+  try { base = compileSource(el.src); } catch (e) { /* editing in progress */ }
+  for (const key of Object.keys(spec)) {
+    const cfg = spec[key];
+    const row = document.createElement('div');
+    row.className = 'tune-row';
+    const nm = document.createElement('span');
+    nm.className = 'nm';
+    nm.textContent = cfg.label || key;
+    nm.title = key + (cfg.help ? ' — ' + cfg.help : '');
+    const inp = document.createElement('input');
+    inp.type = 'range';
+    inp.min = cfg.min; inp.max = cfg.max; inp.step = cfg.step;
+    inp.value = el.def[key];
+    inp.title = key;
+    const v = document.createElement('span');
+    v.className = 'v';
+    v.textContent = fmtTune(+el.def[key], cfg.step);
+    const mark = () => { if (base) row.classList.toggle('changed', base[key] !== el.def[key]); };
+    mark();
+    inp.addEventListener('input', () => {
+      el.def[key] = +inp.value;          // rules read this on the next tick
+      v.textContent = fmtTune(+inp.value, cfg.step);
+      mark();
+    });
+    row.append(nm, inp, v);
+    body.appendChild(row);
+  }
+}
+
+function setMsg(text, cls) {
+  const m = $('edMsg');
+  m.textContent = text;
+  m.className = cls || '';
+}
+function onElementBroken(id) {
+  rebuildPalette();
+  if (id === selId) setMsg(EL[id].error, 'err');
+}
+function doApply() {
+  const src = $('edSrc').value;
+  const res = applySource(selId, src);
+  if (res.ok) {
+    setMsg('applied ✓', 'ok');
+    rebuildPalette();
+    selectElement(selId);
+    setMsg('applied ✓', 'ok');
+  } else {
+    EL[selId].draft = src;
+    setMsg(res.error, 'err');
+  }
+}
+$('btnTuneReset').addEventListener('click', () => {
+  const el = EL[selId];
+  try {
+    const fresh = compileSource(el.src);
+    for (const k of tuneKeys(el.def)) if (typeof fresh[k] === 'number') el.def[k] = fresh[k];
+    renderTuning(selId);
+    setMsg('sliders reset to this element\'s own defaults', 'ok');
+  } catch (e) {
+    setMsg('could not reset: ' + (e && e.message ? e.message : e), 'err');
+  }
+});
+$('btnApply').addEventListener('click', doApply);
+$('btnRevert').addEventListener('click', () => {
+  EL[selId].draft = null;
+  $('edSrc').value = EL[selId].src;
+  setMsg('reverted to last applied version', 'ok');
+});
+$('btnDefault').addEventListener('click', () => {
+  const res = applySource(selId, EL[selId].defaultSrc);
+  if (res.ok) { selectElement(selId); setMsg('restored default rules ✓', 'ok'); }
+  else setMsg(res.error, 'err');
+});
+$('edSrc').addEventListener('input', () => { EL[selId].draft = $('edSrc').value; });
+$('edSrc').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); doApply(); }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const t = e.target, s = t.selectionStart, en = t.selectionEnd;
+    t.value = t.value.slice(0, s) + '  ' + t.value.slice(en);
+    t.selectionStart = t.selectionEnd = s + 2;
+    EL[selId].draft = t.value;
+  }
+});
+$('btnNew').addEventListener('click', () => {
+  const res = addElement();
+  if (res.ok) { rebuildPalette(); selectElement(res.id); setMsg('new element created — edit away', 'ok'); }
+  else setMsg(res.error, 'err');
+});
+$('edSelect').addEventListener('change', e => selectElement(+e.target.value));
+
+$('btnPlay').addEventListener('click', () => setPlaying(!playing));
+function setPlaying(p) { playing = p; $('btnPlay').textContent = p ? 'pause' : 'play'; }
+$('btnStep').addEventListener('click', () => { setPlaying(false); tick(); });
+$('btnClear').addEventListener('click', clearWorld);
+$('btnDemo').addEventListener('click', seed);
+$('selSpeed').addEventListener('change', e => { speed = +e.target.value; });
+$('selSize').addEventListener('change', e => { allocWorld(+e.target.value); seed(); });
+$('brush').addEventListener('input', e => { brushR = +e.target.value; $('brushVal').textContent = brushR; });
+
+// keep spacebar for pause/play instead of re-triggering the last clicked button
+document.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (b) b.blur();
+});
+document.addEventListener('keydown', e => {
+  if (e.target.closest('textarea, input, select')) return;
+  if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+  else if (e.key === 's') { setPlaying(false); tick(); }
+  else if (e.key === '[') { brushR = Math.max(1, brushR - 1); $('brush').value = brushR; $('brushVal').textContent = brushR; }
+  else if (e.key === ']') { brushR = Math.min(24, brushR + 1); $('brush').value = brushR; $('brushVal').textContent = brushR; }
+  else if (/^[0-9]$/.test(e.key)) {
+    const idx = e.key === '0' ? 10 : +e.key; // 1..9 then 0 -> tenth
+    if (EL[idx]) selectElement(idx);
+  }
+});
+
+/* share: export / import */
+const ioMsg = (t, c) => { const m = $('ioMsg'); m.textContent = t; m.className = c || ''; };
+$('btnExport').addEventListener('click', () => { $('ioText').value = exportRules(); ioMsg('ruleset json generated ✓', 'ok'); });
+$('btnDownload').addEventListener('click', () => {
+  const blob = new Blob([exportRules()], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sandlab-rules.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  ioMsg('downloading sandlab-rules.json…', 'ok');
+});
+$('btnCopy').addEventListener('click', async () => {
+  const txt = exportRules();
+  $('ioText').value = txt;
+  try { await navigator.clipboard.writeText(txt); ioMsg('copied to clipboard ✓', 'ok'); }
+  catch (e) { $('ioText').select(); ioMsg('clipboard blocked — json is in the box, ctrl+c it', 'err'); }
+});
+$('btnImportText').addEventListener('click', () => {
+  const res = importRules($('ioText').value);
+  if (res.ok) { finishImport(res); } else ioMsg(res.error, 'err');
+});
+$('btnImportFile').addEventListener('click', () => $('fileIn').click());
+$('fileIn').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const res = importRules(String(r.result));
+    if (res.ok) { $('ioText').value = String(r.result); finishImport(res); } else ioMsg(res.error, 'err');
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+function finishImport(res) {
+  selId = Math.min(2, EL.length - 1);
+  rebuildPalette();
+  selectElement(selId);
+  ioMsg('imported ' + res.count + ' elements ✓ (canvas cleared)', 'ok');
+}
+
+/* modal */
+$('btnAbout').addEventListener('click', () => $('overlay').classList.add('show'));
+$('btnCloseModal').addEventListener('click', () => $('overlay').classList.remove('show'));
+$('overlay').addEventListener('click', e => { if (e.target === $('overlay')) $('overlay').classList.remove('show'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('overlay').classList.remove('show'); });
+
+/* ---------- 9. demo scene + boot ---------- */
+function seed() {
+  clearWorld();
+  // element ids in this ruleset
+  const ROCK = 1, SAND = 2, WATER = 3, SPRING = 4, PLANT = 5, SOIL = 7,
+        GRAZER = 8, PREDATOR = 9;
+
+  // --- terrain: a broad valley between two rises, on bedrock ---
+  const gh = x => {
+    const t = x / W;
+    return H * 0.58
+      + Math.exp(-Math.pow((t - 0.5) * 2.1, 2)) * H * 0.21   // the broad valley
+      - Math.sin(t * 3.0 + 0.4) * H * 0.03;                  // gentle relief
+  };
+  for (let x = 0; x < W; x++) {
+    const top = Math.round(gh(x));
+    for (let y = top; y < H; y++) setCell(x, y, y > H - 12 ? ROCK : SAND);
+  }
+
+  // --- a deep lake in the valley, with springs on the bottom to renew it ---
+  const wl = Math.round(gh(W * 0.5)) - 22;   // water line: a wide, shallow lake
+  for (let x = 0; x < W; x++) {
+    const g = Math.round(gh(x));
+    for (let y = wl; y < g; y++) setCell(x, y, WATER);   // flood the air below it
+  }
+  // springs sit right at the water line, which makes them self-regulating:
+  // submerged they fall quiet, and as the lake is drunk down they surface and
+  // start trickling again — a water table holding the lake at a steady level
+  for (const f of [0.34, 0.44, 0.56, 0.66]) setCell(Math.round(W * f), wl - 1, SPRING);
+
+  // --- rich soil where litter has piled along the shore before ---
+  for (let x = 0; x < W; x++) {
+    const g = Math.round(gh(x));
+    if (Math.abs(g - wl) < 22 && Math.random() < 0.45)
+      for (let j = 0; j < 2; j++) setCell(x, g + j, SOIL);
+  }
+
+  // --- sparse vegetation on the moist shoreline; it will fill in on its own ---
+  for (let x = 2; x < W - 2; x += 3) {
+    const g = Math.round(gh(x));
+    if (Math.abs(g - wl) < 14 && Math.random() < 0.7)
+      for (let j = 1; j <= 2; j++) setCell(x, g - j, PLANT);
+  }
+
+  // let the shoreline green up before the animals arrive, so the world is
+  // already alive on the first frame (a couple hundred ticks is instant)
+  for (let t = 0; t < 220; t++) tick();
+
+  // --- release the wildlife: a modest herd, and a pair of predators ---
+  for (let k = 0; k < 14; k++) {
+    const x = 6 + ((Math.random() * (W - 12)) | 0);
+    const g = Math.round(gh(x));
+    if (Math.abs(g - wl) > 30) continue;              // keep them near the green
+    setCell(x, Math.min(g, wl) - 3 - ((Math.random() * 3) | 0), GRAZER);
+  }
+  for (let k = 0; k < 5; k++) {
+    const x = Math.round(W * (0.25 + Math.random() * 0.5));
+    setCell(x, Math.min(Math.round(gh(x)), wl) - 9, PREDATOR);
+  }
+}
+
+function getCell(x, y) {
+  if (x < 0 || x >= W || y < 0 || y >= H) return 1;
+  return S[y * W + x];
+}
+
+/* live population census + tiny sparklines of the living populations */
+const CENSUS = { hist: {} };
+const SPARK = ' ▁▂▃▄▅▆▇█';
+const TRACK = ['PLANT', 'GRAZER', 'PREDATOR'];
+function sparkline(arr) {
+  if (!arr || !arr.length) return '';
+  const m = Math.max(1, ...arr);
+  return arr.map(v => SPARK[Math.min(8, Math.round(v / m * 8))]).join('');
+}
+function renderCensus() {
+  const items = [['Plant', 'PLANT'], ['Grazer', 'GRAZER'], ['Predator', 'PREDATOR'],
+                 ['Litter', 'LITTER'], ['Soil', 'SOIL'], ['Water', 'WATER']]
+    .map(([nm, ident]) => [nm, ident, identOwner.get(ident)])
+    .filter(it => it[2] !== undefined);
+  const counts = {};
+  for (const it of items) counts[it[2]] = 0;
+  for (let i = 0; i < S.length; i++) { const sp = S[i]; if (counts[sp] !== undefined) counts[sp]++; }
+  for (const ident of TRACK) {
+    const id = identOwner.get(ident);
+    if (id === undefined) continue;
+    const h = (CENSUS.hist[ident] = CENSUS.hist[ident] || []);
+    h.push(counts[id] || 0);
+    if (h.length > 44) h.shift();
+  }
+  let html = '';
+  for (const [nm, ident, id] of items) {
+    const rgb = EL[id] ? EL[id].rgb : [200, 200, 200];
+    const spark = TRACK.includes(ident) ? ' <span class="spark">' + sparkline(CENSUS.hist[ident]) + '</span>' : '';
+    html += '<span class="item"><span class="dot" style="background:rgb(' + rgb.join(',') + ')"></span>' +
+            nm.toLowerCase() + ' <span class="n">' + (counts[id] || 0) + '</span>' + spark + '</span>';
+  }
+  $('census').innerHTML = html;
+}
+
+function frameLoop(t) {
+  requestAnimationFrame(frameLoop);
+  fitView();
+  if (playing) {
+    acc += speed;
+    while (acc >= 1) { acc -= 1; tick(); ticks++; }
+  }
+  frame++;
+  frames++;
+  render();
+  if (t - lastFpsT > 500) {
+    const dt = (t - lastFpsT) / 1000;
+    $('fps').textContent = Math.round(frames / dt) + ' fps · ' + Math.round(ticks / dt) + ' tps · ' + W + '×' + H;
+    frames = 0; ticks = 0; lastFpsT = t;
+    renderCensus();
+  }
+}
+
+(function boot() {
+  const res = loadRuleset(BUILTIN);
+  if (!res.ok) {
+    document.body.innerHTML = '<pre style="color:#ff7a7a;padding:20px">boot failed: ' + res.error + '</pre>';
+    return;
+  }
+  allocWorld(256);
+  seed();
+  selId = 2; // sand
+  rebuildPalette();
+  selectElement(2);
+  requestAnimationFrame(frameLoop);
+})();
+
+/* debug / power-user handle (also used by automated tests) */
+window.sandlab = {
+  get W() { return W; }, get H() { return H; },
+  get elements() { return EL; },
+  species: () => S,
+  rb: () => RB,
+  ra: () => RA,
+  get: (x, y) => S[y * W + x],
+  count(id) { let c = 0; for (let i = 0; i < S.length; i++) if (S[i] === id) c++; return c; },
+  idOf(name) { const k = identFor(name); return identOwner.has(k) ? identOwner.get(k) : -1; },
+  census() {
+    const out = {};
+    for (const nm of ['Plant', 'Grazer', 'Predator', 'Litter', 'Soil', 'Water', 'Sand']) {
+      const id = this.idOf(nm);
+      out[nm] = id < 0 ? 0 : this.count(id);
+    }
+    return out;
+  },
+  paint, tick, clearWorld, seed, applySource, addElement, importRules, exportRules,
+  setPlaying, selectElement,
+};
+</script>
+</body>
+</html>
