@@ -36,7 +36,29 @@
   button.primary{background:var(--link);border-color:var(--link);color:#fff}
   button.primary:hover:not(:disabled){color:#fff;opacity:.92}
   #status{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-size:.92rem;margin-bottom:12px;min-height:42px}
-  #board{display:block;width:100%;max-width:640px;margin:0 auto;border-radius:6px;touch-action:manipulation}
+  /* game area breaks out of the 880px text column so board + brain share one screen */
+  #gameArea{max-width:1100px;margin:0 auto;padding:0 16px}
+  #playRow{display:flex;gap:16px;align-items:flex-start;justify-content:center}
+  #boardWrap{flex:1 1 640px;min-width:0;max-width:min(640px,calc(100vh - 235px))}
+  #board{display:block;width:100%;border-radius:6px;touch-action:manipulation}
+
+  #brainPanel{flex:0 0 372px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  #brainPanel .bp-title{font-size:.88rem;font-weight:600;margin:0 0 2px}
+  #brainPanel .bp-sub{font-size:.74rem;color:var(--muted);margin:0 0 8px;line-height:1.45}
+  #brainMaps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .bmap{text-align:center;min-width:0}
+  .bmap canvas{display:block;width:100%;height:auto;border-radius:4px;image-rendering:pixelated}
+  .bmap .bl{font-size:.7rem;color:var(--muted);margin-top:2px}
+  .bmap.clickable{cursor:pointer}
+  .bmap.clickable:hover canvas{outline:2px solid var(--link);outline-offset:1px}
+  .bmap.masked canvas{opacity:.35;filter:grayscale(.8)}
+  .bmap.masked .bl{color:#b91c1c;font-weight:600}
+  @media (max-width:860px){
+    #playRow{flex-wrap:wrap}
+    #boardWrap{max-width:640px}
+    #brainPanel{flex:1 1 100%}
+    #brainMaps{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+  }
 
   .rule{padding:12px 0;border-bottom:1px solid var(--line)}
   .rule:last-child{border-bottom:none}
@@ -61,12 +83,15 @@
   </nav>
 </header>
 
-<main class="container">
+<main>
+  <div class="container" style="padding-bottom:0">
   <h1>Go vs KataGo</h1>
   <p class="sub">A real KataGo neural network running in your browser — no server, no search, just the raw policy.
     Or set the opponent to Human and share the board with a friend.
     New to the game? <a href="#rules">Read the rules tutorial below</a>.</p>
+  </div>
 
+  <div id="gameArea">
   <div class="controls">
     <label>Board
       <select id="size">
@@ -92,11 +117,24 @@
     <button class="primary" id="new">New game</button>
     <button id="pass">Pass</button>
     <button id="undo">Undo</button>
+    <button id="brainbtn">Brain view</button>
   </div>
 
   <div id="status">Loading neural network (~12 MB)&hellip;</div>
-  <canvas id="board"></canvas>
+  <div id="playRow">
+    <div id="boardWrap"><canvas id="board"></canvas></div>
+    <div id="brainPanel" hidden>
+      <p class="bp-title">KataGo's brain</p>
+      <p class="bp-sub">Each layer's activation on the position, shallow &rarr; deep; brighter =
+        stronger. The policy map is where it wants to play (circled).
+        Click a numbered layer to <b>mask it</b> — its output is zeroed and KataGo must
+        play without it.</p>
+      <div id="brainMaps"></div>
+    </div>
+  </div>
+  </div>
 
+  <div class="container" style="padding-top:8px">
   <section id="rules">
     <h2>How to play Go <span class="region-tag">tutorial</span></h2>
 
@@ -226,6 +264,7 @@
     TF.js conversion via Y.&nbsp;Ichikawa / M.&nbsp;Korzh. UI &amp; engine written for this site.
     <a href="/misc/">&larr; back to Miscellaneous</a>
   </p>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
@@ -374,6 +413,7 @@ async function loadModel(){
   try{ ok=await tf.setBackend('webgl'); }catch(e){ ok=false; }
   if(!ok) await tf.setBackend('cpu');
   model=await tf.loadGraphModel('./model/b10c128/model.json');
+  window.__model=model;   // debug handle (used by automated tests)
   // warm-up
   await runNet(new Game(9));
 }
@@ -390,6 +430,175 @@ async function runNet(game){
 // predicted final score lead (komi included) for the side to move — the net's trained "lead" head
 function scoreSelf(net){
   return net.misc[2]*20;
+}
+
+/* ---------------- Brain view ----------------
+   The residual trunk is legible in the converted graph: each block's output is
+   the Add node that closes its skip connection (block 10's was fused by the
+   grappler into an AddOpsRewrite node). Each tensor is [1,361,128]; we show
+   mean |activation| over the 128 channels as a board-aligned heatmap. */
+const BRAIN_NODES=[
+  'swa_model/add',        // trunk input (after the first conv)
+  'swa_model/add_4','swa_model/add_8','swa_model/add_12','swa_model/add_16',
+  'swa_model/add_22','swa_model/add_26','swa_model/add_30','swa_model/add_36',
+  'swa_model/add_40',
+  'swa_model/ArithmeticOptimizer/AddOpsRewrite_Leaf_1_add_45', // block 10
+];
+const BRAIN_LABELS=['input','1','2','3','4','5','6','7','8','9','10'];
+const TRUNK_C=128;
+let brainOn=false;
+
+/* Layer masking (lesion study): zeroing rconv{k}/w2 — the conv that closes
+   block k's residual — makes the block contribute exactly nothing, so the
+   skip connection passes straight through and the net plays without it.
+   The original tensor is kept aside and swapped back on unmask. */
+let maskNames=null, maskOrig={}, maskSet=new Set(), brainBusy=false;
+let maskQueue=[], brainPending=false;   // clicks arriving mid-inference wait here
+function weightMap(){
+  return model&&(model.weights||(model.executor&&model.executor.weightMap))||null;
+}
+function findMaskable(){
+  const wm=weightMap();
+  if(!wm) return null;
+  const m={};
+  for(const name of Object.keys(wm)){
+    const mm=name.match(/^swa_model\/rconv(\d+)\/w2$/);
+    if(mm) m[+mm[1]]=name;
+  }
+  return Object.keys(m).length===10?m:null;
+}
+// swap the weight tensor — only ever called while NO inference is in flight:
+// mutating the map mid-run races the executor's per-run cleanup, which then
+// disposes tensors (ours or the originals) that are still needed
+function applyMask(k){
+  const wm=weightMap(), name=maskNames[k];
+  if(!maskSet.has(k)){
+    maskOrig[k]=wm[name][0];
+    wm[name]=[tf.zerosLike(maskOrig[k])];
+    maskSet.add(k);
+  }else{
+    wm[name][0].dispose();
+    wm[name]=[maskOrig[k]];
+    delete maskOrig[k];
+    maskSet.delete(k);
+  }
+  // re-register weight ids: the executor's post-run cleanup disposes any tensor
+  // in the map whose id it doesn't know as a weight (the setter rebuilds the list)
+  if(model.executor) model.executor.weightMap=model.executor.weightMap;
+}
+function drainMaskQueue(){
+  if(!maskQueue.length) return false;
+  maskQueue.splice(0).forEach(applyMask);
+  updateBrainBtn();
+  return true;
+}
+function toggleMask(k){
+  if(model===null) return;
+  if(maskNames===null) maskNames=findMaskable();
+  if(maskNames===null){ console.warn('layer masking unavailable: weight map not found'); return; }
+  if(thinking||brainBusy){ maskQueue.push(k); brainPending=true; return; }
+  applyMask(k);
+  updateBrainBtn();
+  if(brainOn) runBrain(game,null).catch(console.error);
+}
+function updateBrainBtn(){
+  document.getElementById('brainbtn').textContent=
+    maskSet.size?('Brain view · '+maskSet.size+' masked'):'Brain view';
+}
+
+function heatColor(v){ // 0..1 -> rgb, dark navy through blue to warm white
+  const s=[[13,15,26],[36,68,160],[64,156,255],[247,214,92],[255,255,255]];
+  const t=Math.max(0,Math.min(1,v))*(s.length-1);
+  const i=Math.min(s.length-2,Math.floor(t)), f=t-i;
+  return 'rgb('+s[i].map((c,k)=>Math.round(c+(s[i+1][k]-c)*f)).join(',')+')';
+}
+
+async function runBrain(g,pick){
+  if(model===null) return;
+  const myEpoch=epoch;
+  brainBusy=true;
+  try{
+  const {bin,glob}=encode(g);   // synchronous — snapshots the position now
+  const bt=tf.tensor3d(bin,[1,SPATIAL,CH]), gt=tf.tensor2d(glob,[1,GLOB]);
+  const res=await model.executeAsync(
+    {'swa_model/bin_inputs':bt,'swa_model/global_inputs':gt}, BRAIN_NODES.concat(OUT[0]));
+  const N=g.N, maps=[];
+  for(let k=0;k<BRAIN_NODES.length;k++){
+    const d=await res[k].data();
+    const m=new Float32Array(N*N);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const p=(y*T+x)*TRUNK_C; let s=0;
+      for(let c=0;c<TRUNK_C;c++) s+=Math.abs(d[p+c]);
+      m[y*N+x]=s/TRUNK_C;
+    }
+    maps.push(m);
+  }
+  const polData=await res[BRAIN_NODES.length].data(); // [2,362], channel 0
+  bt.dispose(); gt.dispose(); res.forEach(t=>t.dispose());
+  const pol=new Float32Array(N*N);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++) pol[y*N+x]=polData[y*T+x];
+  if(epoch!==myEpoch) return;   // a New game happened while the net ran
+  drawBrain(g,maps,pol,polData[361],pick);
+  }finally{
+    brainBusy=false;
+    const changed=drainMaskQueue();
+    if(brainPending||changed){
+      brainPending=false;
+      runBrain(game,null).catch(e=>{window.__lastBrainErr=String(e&&e.stack||e);console.error(e);});
+    }
+  }
+}
+
+function drawBrainMap(g,vals,lo,hi,label,pick){
+  const N=g.N, S=6;
+  const div=document.createElement('div'); div.className='bmap';
+  const cv=document.createElement('canvas'); cv.width=N*S; cv.height=N*S;
+  const c=cv.getContext('2d');
+  const range=(hi-lo)||1;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    c.fillStyle=heatColor((vals[y*N+x]-lo)/range);
+    c.fillRect(x*S,y*S,S,S);
+  }
+  // faint stones so the maps stay oriented to the board
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const st=g.board[y*N+x];
+    if(st===EMPTY) continue;
+    c.beginPath(); c.arc(x*S+S/2,y*S+S/2,S*0.32,0,7);
+    if(st===BLACK){ c.fillStyle='rgba(0,0,0,.75)'; c.fill(); }
+    else{ c.strokeStyle='rgba(255,255,255,.9)'; c.lineWidth=1; c.stroke(); }
+  }
+  if(pick!=null&&pick>=0){
+    const px=pick%N, py=(pick-px)/N;
+    c.beginPath(); c.arc(px*S+S/2,py*S+S/2,S*0.75,0,7);
+    c.strokeStyle='#ff5050'; c.lineWidth=1.5; c.stroke();
+  }
+  const bl=document.createElement('div'); bl.className='bl'; bl.textContent=label;
+  div.append(cv,bl);
+  return div;
+}
+
+function drawBrain(g,maps,pol,passP,pick){
+  window.__lastMaps=maps;   // debug handles (used by automated tests)
+  window.__renders=(window.__renders||0)+1;
+  const wrap=document.getElementById('brainMaps');
+  wrap.innerHTML='';
+  for(let k=0;k<maps.length;k++){
+    let lo=Infinity,hi=-Infinity;
+    for(const v of maps[k]){ if(v<lo)lo=v; if(v>hi)hi=v; }
+    const isMasked=maskSet.has(k);
+    const div=drawBrainMap(g,maps[k],lo,hi,BRAIN_LABELS[k]+(isMasked?' ✕':''),null);
+    if(k>=1){   // blocks 1..10 are maskable; the input conv is not
+      div.classList.add('clickable');
+      if(isMasked) div.classList.add('masked');
+      div.title=isMasked?'Layer masked (zeroed) — click to restore'
+                        :'Click to mask this layer (zero its output)';
+      div.addEventListener('click',()=>toggleMask(k));
+    }
+    wrap.appendChild(div);
+  }
+  let hi=0; for(const v of pol) if(v>hi)hi=v;
+  const label='policy'+(passP>0.01?(' · pass '+Math.round(passP*100)+'%'):'');
+  wrap.appendChild(drawBrainMap(g,pol,0,hi||1,label,pick));
 }
 
 /* ---------------- App state & AI ---------------- */
@@ -422,6 +631,10 @@ async function aiMove(){
     pick=cand[Math.floor(Math.random()*Math.min(3,cand.length))].i; // vary openings
   else pick=cand[0].i;
 
+  // light up the brain view for the position the net just evaluated
+  if(brainOn) await runBrain(myGame,pick).catch(console.error);
+  if(epoch!==myEpoch||game!==myGame) return;
+
   // score estimate from the perspective of the side to move right now (the AI)
   const lead=scoreSelf(net);
   const aiC=colorName(game.turn), huC=colorName(3-game.turn);
@@ -444,6 +657,8 @@ async function aiMove(){
     // only clear the flag if this computation still owns the current game
     // (a stale finally must not unlock a newer game's in-flight AI turn)
     if(epoch===myEpoch&&game===myGame) thinking=false;
+    if(!thinking&&!brainBusy&&drainMaskQueue()&&brainOn)
+      runBrain(game,null).catch(console.error);
   }
 }
 // lead is from `side`'s perspective (the side to move when the net was run)
@@ -464,9 +679,14 @@ function hoshi(N){
   if(N===7)  return [[3,3]];
   return [];
 }
+let lastDrawW=0;
 function draw(){
   const N=game.N;
-  const cssW=Math.min(640,canvas.parentElement.clientWidth);
+  // measure the canvas's own laid-out width: the parent's clientWidth includes
+  // its padding, which made the board non-square (and clicks land on the wrong
+  // row) whenever the container was narrower than the 640px cap
+  const cssW=canvas.clientWidth||Math.min(640,canvas.parentElement.clientWidth);
+  lastDrawW=cssW;
   const dpr=window.devicePixelRatio||1;
   canvas.style.height=cssW+'px';
   canvas.width=cssW*dpr; canvas.height=cssW*dpr;
@@ -498,13 +718,49 @@ function draw(){
     }
   }
 }
+// size the board and brain maps so the whole play area fits on one screen:
+// the board caps at the viewport space below the controls, and the brain
+// panel picks a map-grid shape (3x4, 4x3, or 6x2) whose total height fits
+// that same space, sizing the maps as large as the space allows
+function layoutPlay(){
+  const pr=document.getElementById('playRow');
+  const absTop=pr.getBoundingClientRect().top+window.scrollY;
+  const avail=Math.max(300,window.innerHeight-absTop-14);
+  document.getElementById('boardWrap').style.maxWidth=Math.min(640,avail)+'px';
+  const panel=document.getElementById('brainPanel');
+  const maps=document.getElementById('brainMaps');
+  if(!panel.hidden&&!window.matchMedia('(max-width:860px)').matches){
+    const gaW=document.getElementById('gameArea').clientWidth-32;
+    // the board keeps its full height-capped size; the panel gets the leftover
+    const boardTarget=Math.min(640,avail);
+    const panelWCap=Math.max(220,gaW-16-boardTarget);
+    const head=(panel.querySelector('.bp-title').offsetHeight
+              +panel.querySelector('.bp-sub').offsetHeight)||60;
+    const label=17, gap=8, padV=28, padH=28;
+    let best={mapH:0,C:3};
+    for(const C of [3,4,6]){
+      const R=Math.ceil(12/C);
+      const hH=Math.floor((avail-head-padV-R*label-(R-1)*gap)/R);
+      const hW=Math.floor((panelWCap-padH-(C-1)*gap)/C);
+      const m=Math.min(120,hH,hW);
+      if(m>best.mapH) best={mapH:m,C};
+    }
+    const mapH=Math.max(48,best.mapH);
+    panel.style.flexBasis=(best.C*mapH+(best.C-1)*gap+padH)+'px';
+    maps.style.gridTemplateColumns='repeat('+best.C+',1fr)';
+  }else{ panel.style.flexBasis=''; maps.style.gridTemplateColumns=''; }
+  draw();
+}
+
 canvas.addEventListener('click',ev=>{
   if(thinking||game.over) return;
   if(mode==='ai'&&(model===null||game.turn!==humanColor)) return;
   const rect=canvas.getBoundingClientRect();
-  const N=game.N, cell=rect.width/(N+1);
-  const x=Math.round((ev.clientX-rect.left)/cell)-1;
-  const y=Math.round((ev.clientY-rect.top)/cell)-1;
+  // separate x/y scales: if a layout shift left the canvas displayed
+  // non-square, the grid is stretched with it, so per-axis mapping stays exact
+  const N=game.N, cellX=rect.width/(N+1), cellY=rect.height/(N+1);
+  const x=Math.round((ev.clientX-rect.left)/cellX)-1;
+  const y=Math.round((ev.clientY-rect.top)/cellY)-1;
   if(x<0||y<0||x>=N||y>=N) return;
   if(!game.play(y*N+x)) return;
   const caps=game.history[game.history.length-1].captured.length;
@@ -513,6 +769,7 @@ canvas.addEventListener('click',ev=>{
   else{
     const capsTxt=caps?(colorName(3-game.turn)+' captured '+caps+' stone'+(caps>1?'s':'')+'. '):'';
     setStatus(capsTxt+colorName(game.turn)+' to move.');
+    if(brainOn) runBrain(game,null).catch(console.error);
   }
 });
 
@@ -524,6 +781,9 @@ function newGame(){
   game=new Game(parseInt(document.getElementById('size').value,10));
   humanColor=parseInt(document.getElementById('color').value,10);
   draw();
+  document.getElementById('brainMaps').innerHTML='';   // drop maps of the old game
+  if(brainOn&&model!==null&&(mode==='hvh'||game.turn===humanColor))
+    runBrain(game,null).catch(console.error);          // AI-first games render via aiMove
   // two-player mode needs no net — playable even while (or if) it loads
   if(mode==='hvh'){ setStatus('Two players, one board — Black to move. Komi '+KOMI+'.'); return; }
   if(model===null){ setStatus('Loading neural network (~12 MB)&hellip;'); return; }
@@ -556,8 +816,23 @@ document.getElementById('undo').addEventListener('click',()=>{
   if(mode==='ai') while(game.history.length&&game.turn!==humanColor) game.undo();
   draw();
   setStatus(mode==='ai'?('Your move ('+colorName(game.turn)+').'):(colorName(game.turn)+' to move.'));
+  if(brainOn) runBrain(game,null).catch(console.error);
 });
-window.addEventListener('resize',draw);
+document.getElementById('brainbtn').addEventListener('click',()=>{
+  brainOn=!brainOn;
+  document.getElementById('brainbtn').classList.toggle('primary',brainOn);
+  document.getElementById('brainPanel').hidden=!brainOn;
+  layoutPlay();   // the sidebar changes the board's width
+  // show the current position right away (aiMove will refresh it if it's thinking)
+  if(brainOn&&model!==null&&!thinking) runBrain(game,null).catch(console.error);
+});
+window.addEventListener('resize',layoutPlay);
+// redraw on ANY board-width change, including ones that fire no resize event
+// (scrollbar appearing when the brain panel grows the page, flex shifts, etc.)
+// — otherwise the internal grid goes stale and clicks land on the wrong point
+new ResizeObserver(()=>{
+  if(canvas.clientWidth&&canvas.clientWidth!==lastDrawW) draw();
+}).observe(document.getElementById('boardWrap'));
 
 /* ---------------- Boot ---------------- */
 // small debug handle for automated testing
@@ -567,7 +842,7 @@ window.__goDebug=function(){
           board:Array.from(game.board),
           stones:Array.from(game.board).filter(v=>v!==0).length};
 };
-draw();
+layoutPlay();
 loadModel().then(()=>{ newGame(); })
   .catch(e=>{ console.error(e); setStatus('Failed to load the neural network — '+e.message); });
 </script>
