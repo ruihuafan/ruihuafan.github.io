@@ -130,9 +130,8 @@
         <button id="btnDemo" class="primary">demo scene</button>
         <span class="ctl">size
           <select id="selSize">
-            <option value="160">160²</option>
-            <option value="256" selected>256²</option>
-            <option value="352">352²</option>
+            <option value="160" selected>160²</option>
+            <option value="256">256²</option>
           </select>
         </span>
       </div>
@@ -188,7 +187,7 @@
       <div id="rulePanel" hidden>
         <textarea id="edSrc" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
         <div class="ed-row" style="margin-top:8px">
-          <button id="btnApply" class="primary">apply (ctrl+↵)</button>
+          <button id="btnApply" class="primary">apply</button>
           <button id="btnRevert">revert edits</button>
           <button id="btnDefault">restore default</button>
         </div>
@@ -211,16 +210,14 @@
        rewrite live</b>.</p>
     <div class="keys">
       <span>draw</span><span>left mouse / touch</span>
-      <span>erase</span><span>right mouse drag, the erase chip, or <b>e</b></span>
-      <span>undo</span><span>ctrl+z, or the undo button (last 12 strokes)</span>
-      <span>space</span><span>pause / play</span>
-      <span>s</span><span>step one tick while paused</span>
-      <span>[ ]</span><span>brush smaller / bigger</span>
-      <span>1–9, 0</span><span>select elements</span>
-      <span>ctrl+↵</span><span>apply rule edits (in the editor)</span>
+      <span>erase</span><span>right mouse drag, or the erase button</span>
+      <span>undo</span><span>the undo button (last 12 strokes)</span>
     </div>
-    <p><b>The cast.</b> <b>Rock</b> is inert bedrock (and the world's edge). <b>Sand</b> is loose
-       mineral ground. <b>Water</b> is the resource everything runs on, and a <b>Spring</b> renews it —
+    <p><b>The cast.</b> <b>Rock</b> is the world's edge and the outcrops on the shore.
+       It is the only thing here that neither burns nor erodes, which earns it three jobs: it stops
+       a wildfire dead, it shields the soil tucked against it from weathering, and the one-cell
+       crevice at the foot of a bluff counts as cover, so a grazer backed into it cannot be
+       pounced on. <b>Sand</b> is loose mineral ground. <b>Water</b> is the resource everything runs on, and a <b>Spring</b> renews it —
        the one input to the whole system, this world's equivalent of sunlight. Exposed water also
        evaporates into <b>Vapor</b>, which drifts up, rides the sky a while, then condenses back
        as rain — so the weather itself is part of the water cycle. <b>Plants</b> are the
@@ -255,7 +252,8 @@
     <p><b>Things to try:</b> drag a predator's hunting skill up and watch the herds crash, then
        collapse · light a fire in dry scrub far from water and watch it stop at the green
        shoreline · burn a patch and wait for the richer regrowth · drop a predator into a fat herd
-       and watch them scatter · dam a channel with rock to steer where life can grow · crank up
+       and watch them scatter · chase a herd toward a bluff and watch the crevice save them ·
+       wall a patch of scrub off with rock, then set the rest alight · crank up
        evaporation and watch the lake move into the sky · erase a swathe of plants and watch the
        exposed soil crust over into sand · paint plants onto bare sand and watch them build soil ·
        edit Grazer so it eats Litter too (a scavenger).</p>
@@ -1134,13 +1132,15 @@ const BUILTIN = [
   meal: 85,           // energy gained from a kill
   breedRate: 0.012,   // fecundity once gorged
   sense: 7,           // how far it can spot prey (grazers panic at 4)
+  shelter: 0.5,       // how much one rock face counts toward a grazer's cover
   tune: {
     metabolism: { min: 0, max: 0.40, step: 0.005, label: "metabolism" },
     hunt:       { min: 0, max: 0.60, step: 0.01,  label: "hunting skill" },
     weakBonus:  { min: 0, max: 0.60, step: 0.01,  label: "vs weak prey" },
     meal:       { min: 10, max: 160, step: 5,     label: "energy per kill" },
     breedRate:  { min: 0, max: 0.10, step: 0.002, label: "breeding rate" },
-    sense:      { min: 1, max: 12,   step: 1,     label: "stalking range" }
+    sense:      { min: 1, max: 12,   step: 1,     label: "stalking range" },
+    shelter:    { min: 0, max: 1,    step: 0.05,  label: "rock as cover" }
   },
 
   shade(ra, rb, frame, out) {
@@ -1190,10 +1190,19 @@ const BUILTIN = [
     if (prey) {
       const condition = api.getRb(gx, gy) / 255;      // 1 = fat and fast
       if (api.chance(this.hunt + this.weakBonus * (1 - condition))) {
+        // COVER - dense vegetation hides prey outright; rock counts for half,
+        // so a grazer properly wedged into a crevice is awkward to reach. The
+        // half-weight matters: three rock faces is what you get merely from
+        // standing on bedrock or against the world edge (off-grid reads come
+        // back as ROCK), and that must never be enough on its own.
         let cover = 0;
         for (let dy = -1; dy <= 1; dy++)
-          for (let dx = -1; dx <= 1; dx++)
-            if ((dx || dy) && api.get(gx + dx, gy + dy) === PLANT) cover++;
+          for (let dx = -1; dx <= 1; dx++) {
+            if (!dx && !dy) continue;
+            const n = api.get(gx + dx, gy + dy);
+            if (n === PLANT) cover += 1;
+            else if (n === ROCK) cover += this.shelter;
+          }
         if (cover < 3) { api.move(gx, gy); api.rb = Math.min(255, api.rb + this.meal); return; }
       }
     }
@@ -1676,7 +1685,8 @@ $('btnDefault').addEventListener('click', () => {
 });
 $('edSrc').addEventListener('input', () => { EL[selId].draft = $('edSrc').value; });
 $('edSrc').addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); doApply(); }
+  // Tab indents rather than moving focus — this is text editing inside the
+  // code box, not an app shortcut.
   if (e.key === 'Tab') {
     e.preventDefault();
     const t = e.target, s = t.selectionStart, en = t.selectionEnd;
@@ -1702,25 +1712,6 @@ $('selSize').addEventListener('change', e => { allocWorld(+e.target.value); seed
 $('selTool').addEventListener('change', e => { tool = e.target.value; });
 $('brush').addEventListener('input', e => { brushR = +e.target.value; $('brushVal').textContent = brushR; paintRange(e.target); });
 
-// keep spacebar for pause/play instead of re-triggering the last clicked button
-document.addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (b) b.blur();
-});
-document.addEventListener('keydown', e => {
-  if (e.target.closest('textarea, input, select')) return;
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); doUndo(); }
-  else if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
-  else if (e.key === 's') { setPlaying(false); tick(); }
-  else if (e.key === 'e') selectElement(0);
-  else if (e.key === '[') { brushR = Math.max(1, brushR - 1); $('brush').value = brushR; $('brushVal').textContent = brushR; paintRange($('brush')); }
-  else if (e.key === ']') { brushR = Math.min(24, brushR + 1); $('brush').value = brushR; $('brushVal').textContent = brushR; paintRange($('brush')); }
-  else if (/^[0-9]$/.test(e.key)) {
-    const idx = e.key === '0' ? 10 : +e.key; // 1..9 then 0 -> tenth
-    if (EL[idx]) selectElement(idx);
-  }
-});
-
 /* modals: about + api reference */
 $('btnAbout').addEventListener('click', () => $('overlay').classList.add('show'));
 $('btnCloseModal').addEventListener('click', () => $('overlay').classList.remove('show'));
@@ -1728,15 +1719,12 @@ $('overlay').addEventListener('click', e => { if (e.target === $('overlay')) $('
 $('btnApi').addEventListener('click', () => $('apiOverlay').classList.add('show'));
 $('btnCloseApi').addEventListener('click', () => $('apiOverlay').classList.remove('show'));
 $('apiOverlay').addEventListener('click', e => { if (e.target === $('apiOverlay')) $('apiOverlay').classList.remove('show'); });
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { $('overlay').classList.remove('show'); $('apiOverlay').classList.remove('show'); }
-});
 
 /* ---------- 9. demo scene + boot ---------- */
 function seed() {
   clearWorld();
   // element ids in this ruleset
-  const ROCK = 1, WATER = 3, SPRING = 4, PLANT = 5, SOIL = 7,
+  const EMPTY = 0, ROCK = 1, WATER = 3, SPRING = 4, PLANT = 5, SOIL = 7,
         GRAZER = 8, PREDATOR = 9;
 
   // --- randomized geography: every demo valley is a little different ---
@@ -1754,13 +1742,31 @@ function seed() {
       + Math.exp(-Math.pow((t - vc) * vw, 2)) * H * vd   // the valley
       - Math.sin(t * 3.0 + ph) * H * ra;                 // gentle relief
   };
+  // Every depth below is a fraction of the world, not a fixed cell count:
+  // these numbers were tuned at 256², and left absolute they would give a
+  // small world a proportionally shallower lake ringed by a proportionally
+  // wider band of seedlings, which then drink the lake dry.
+  const k = H / 256;                          // linear scale
+  const kn = (W * H) / (256 * 256);           // area scale, for populations
+  const px = f => Math.max(1, Math.round(f * k));
+  const cnt = (lo, hi) => Math.max(2, Math.round((lo + Math.random() * (hi - lo)) * kn));
+
+  // No bedrock layer: reads past the edge of the world already come back as
+  // ROCK, so the bottom edge is a floor whether or not anything is drawn there.
   for (let x = 0; x < W; x++) {
     const top = Math.round(gh(x));
-    for (let y = top; y < H; y++) setCell(x, y, y > H - 12 ? ROCK : SOIL);
+    for (let y = top; y < H; y++) setCell(x, y, SOIL);
   }
 
   // --- a lake in the valley, with springs on the bottom to renew it ---
-  const wl = Math.round(gh(W * vc)) - (16 + ((Math.random() * 12) | 0));   // water line
+  // Cap the lake against this valley's actual relief. A random depth can
+  // otherwise exceed how deep the valley is, which drowns the entire map:
+  // no shore, no vegetation band, and nowhere dry to stand an outcrop.
+  let gmin = 1e9, gmax = -1e9;
+  for (let x = 0; x < W; x++) { const g = gh(x); if (g < gmin) gmin = g; if (g > gmax) gmax = g; }
+  const depth = Math.max(px(5), Math.min(px(16) + ((Math.random() * px(12)) | 0),
+                                         Math.round((gmax - gmin) * 0.7)));
+  const wl = Math.round(gmax) - depth;   // water line, always below the high ground
   for (let x = 0; x < W; x++) {
     const g = Math.round(gh(x));
     for (let y = wl; y < g; y++) setCell(x, y, WATER);   // flood the air below it
@@ -1768,8 +1774,8 @@ function seed() {
   // springs sit right at the water line, which makes them self-regulating:
   // submerged they fall quiet, and as the lake is drunk down they surface and
   // start trickling again — a water table holding the lake at a steady level
-  const nsprings = 3 + ((Math.random() * 3) | 0);
-  for (let k = 0; k < nsprings; k++) {
+  const nsprings = Math.max(2, Math.round((3 + Math.random() * 3) * k));
+  for (let i = 0; i < nsprings; i++) {
     const f = vc + (Math.random() - 0.5) * 0.3;
     const x = Math.max(2, Math.min(W - 3, Math.round(W * f)));
     if (Math.round(gh(x)) > wl) setCell(x, wl - 1, SPRING);   // only over the lake
@@ -1778,8 +1784,68 @@ function seed() {
   // --- sparse vegetation on the moist shoreline; it will fill in on its own ---
   for (let x = 2; x < W - 2; x += 3) {
     const g = Math.round(gh(x));
-    if (Math.abs(g - wl) < 14 && Math.random() < 0.7)
+    if (Math.abs(g - wl) < px(14) && Math.random() < 0.7)
       for (let j = 1; j <= 2; j++) setCell(x, g - j, PLANT);
+  }
+
+  // --- rocky outcrops on the shore ---
+  // Rock is the only thing here that neither burns nor weathers, so an
+  // outcrop earns its place three ways: it stops a wildfire dead, it shields
+  // the soil tucked against it from eroding, and the hollow at its base is a
+  // crevice a grazer can back into where a predator struggles to reach it.
+  const bluffAt = (bx, openRight) => {
+    const g = Math.round(gh(bx));
+    const hgt = px(12) + ((Math.random() * px(6)) | 0);
+    const wid = Math.max(5, px(9) + ((Math.random() * px(4)) | 0));
+    // a solid mass keyed two rows into the ground, so the crevice cut into it
+    // has rock underfoot as well as overhead — that is what makes it count as
+    // cover. Each column is grounded separately since the slope runs under it.
+    for (let x = bx; x < bx + wid; x++) {
+      const gx = Math.max(g, Math.round(gh(x)));
+      for (let y = g - hgt; y <= gx + 1; y++) setCell(x, y, ROCK);
+    }
+    // the crevice: one cell tall at ground level, open on the lake side only.
+    // A grazer standing in it has rock on six faces, which is exactly enough
+    // to beat the pounce; the back of it is safer still.
+    const back = 2;
+    const x0 = openRight ? bx + back : bx;
+    const x1 = openRight ? bx + wid : bx + wid - back;
+    for (let x = x0; x < x1; x++) setCell(x, g - 1, EMPTY);
+  };
+  // Every column that sits clear of the waterline, cheapest to compute once.
+  // Placing from this list rather than probing fixed offsets is what stops a
+  // wide, shallow valley from ending up with no rock in it at all.
+  const dry = [];
+  for (let x = 3; x < W - 3; x++) if (Math.round(gh(x)) < wl) dry.push(x);
+
+  // one bluff per shore, each at the driest spot on its side
+  let bluffs = 0;
+  for (const side of [-1, 1]) {
+    let bx = -1, clearest = -1e9;
+    for (const x of dry) {
+      if (x + px(13) >= W - 3) continue;
+      if (side < 0 ? x >= W * vc : x < W * vc) continue;      // stay on this shore
+      const clear = wl - Math.round(gh(x));                   // height above the water
+      if (clear > clearest) { clearest = clear; bx = x; }
+    }
+    if (bx >= 0) { bluffAt(bx, side < 0); bluffs++; }
+  }
+  if (!bluffs && dry.length) {                                // last resort: highest ground
+    let bx = dry[0];
+    for (const x of dry) if (x + px(13) < W - 3 && gh(x) < gh(bx)) bx = x;
+    bluffAt(bx, bx < W * vc);
+  }
+
+  // loose boulders: too small to shelter in, but they break a fire front up
+  // so a burn leaves surviving pockets instead of scouring the whole valley
+  const nboulder = cnt(7, 14);
+  for (let i = 0; i < nboulder && dry.length; i++) {
+    const x = dry[(Math.random() * dry.length) | 0];
+    const g = Math.round(gh(x));
+    const r = 1 + ((Math.random() * Math.max(1, px(3))) | 0);
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++)
+        if (dx * dx + dy * dy <= r * r) setCell(x + dx, g - 1 + dy, ROCK);
   }
 
   // let the shoreline green up before the animals arrive, so the world is
@@ -1788,17 +1854,17 @@ function seed() {
   for (let t = 0; t < warmup; t++) tick();
 
   // --- release the wildlife: a modest herd, and a few predators ---
-  const nherd = 10 + ((Math.random() * 8) | 0);
-  for (let k = 0; k < nherd; k++) {
+  const nherd = cnt(10, 18);
+  for (let i = 0; i < nherd; i++) {
     const x = 6 + ((Math.random() * (W - 12)) | 0);
     const g = Math.round(gh(x));
-    if (Math.abs(g - wl) > 30) continue;              // keep them near the green
-    setCell(x, Math.min(g, wl) - 3 - ((Math.random() * 3) | 0), GRAZER);
+    if (Math.abs(g - wl) > px(30)) continue;           // keep them near the green
+    setCell(x, Math.min(g, wl) - px(3) - ((Math.random() * px(3)) | 0), GRAZER);
   }
-  const npred = 3 + ((Math.random() * 3) | 0);
-  for (let k = 0; k < npred; k++) {
+  const npred = cnt(3, 6);
+  for (let i = 0; i < npred; i++) {
     const x = Math.max(4, Math.min(W - 5, Math.round(W * (vc - 0.2 + Math.random() * 0.4))));
-    setCell(x, Math.min(Math.round(gh(x)), wl) - 9, PREDATOR);
+    setCell(x, Math.min(Math.round(gh(x)), wl) - px(9), PREDATOR);
   }
 }
 
@@ -1907,7 +1973,7 @@ function frameLoop(t) {
     document.body.innerHTML = '<pre style="color:#ff7a7a;padding:20px">boot failed: ' + res.error + '</pre>';
     return;
   }
-  allocWorld(256);
+  allocWorld(160);
   seed();
   UNDO.length = 0;   // the pre-seed blank world is not a state worth undoing to
   selId = 2; // sand
