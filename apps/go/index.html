@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Go vs KataGo</title>
+<title>Go vs KataGo — Ruihua Fan</title>
 <!--
   Play Go against a real KataGo neural network, entirely in the browser.
   Neural network: KataGo "g170" run, b10c128-s1141046784-d204142634 (CC0 / public
@@ -13,32 +13,58 @@
   The net plays its raw policy (no tree search) — roughly dan-level strength.
 -->
 <style>
-  :root { --fg:#0f172a; --muted:#475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; --line:#e2e8f0; }
+  :root { --max: 880px; --fg:#0f172a; --muted:#475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; --line:#e2e8f0; }
   *{box-sizing:border-box}
   body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--fg);background:var(--bg)}
-  .wrap{max-width:760px;margin:0 auto;padding:20px 16px}
-  h1{font-size:24px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+  header{border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;backdrop-filter:saturate(180%) blur(6px);z-index:5}
+  nav{max-width:var(--max);margin:0 auto;display:flex;gap:18px;align-items:center;padding:12px 16px}
+  nav a{color:var(--muted);text-decoration:none;font-weight:600}
+  nav a:hover{color:var(--link)}
+  .container{max-width:var(--max);margin:0 auto;padding:28px 16px}
+  h1{font-size:28px;line-height:1.2;margin:0 0 4px}
+  h2{font-size:20px;margin:26px 0 10px}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+  a{color:var(--link);text-decoration:none}
+  a:hover{text-decoration:underline}
+
   .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
   .controls label{font-size:.88rem;color:var(--muted)}
-  select,button{font:inherit;font-size:.9rem;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--fg);cursor:pointer}
+  select,button{font:inherit;font-size:.9rem;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--fg);cursor:pointer}
+  select{padding:6px 10px}
   button:hover:not(:disabled){border-color:#cbd5e1;color:var(--link)}
-  button:disabled{opacity:.45;cursor:default}
-  #status{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.92rem;margin-bottom:12px;min-height:38px}
+  button:disabled{opacity:.5;cursor:default}
+  button.primary{background:var(--link);border-color:var(--link);color:#fff}
+  button.primary:hover:not(:disabled){color:#fff;opacity:.92}
+  #status{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-size:.92rem;margin-bottom:12px;min-height:42px}
   #board{display:block;width:100%;max-width:640px;margin:0 auto;border-radius:6px;touch-action:manipulation}
-  .foot{color:var(--muted);font-size:.8rem;margin-top:16px;line-height:1.5}
-  .foot a{color:var(--link);text-decoration:none}
-  .foot a:hover{text-decoration:underline}
-  .back{font-size:.88rem;margin-bottom:10px}
-  .back a{color:var(--muted);text-decoration:none}
-  .back a:hover{color:var(--link)}
+
+  .rule{padding:12px 0;border-bottom:1px solid var(--line)}
+  .rule:last-child{border-bottom:none}
+  .rule h3{margin:0 0 6px;font-size:15px}
+  .rule p{margin:0 0 6px;font-size:.95rem;line-height:1.65;color:var(--fg)}
+  .rule p:last-child{margin-bottom:0}
+  .diagrams{display:flex;gap:20px;flex-wrap:wrap;margin:10px 0 2px}
+  .diagram{text-align:center}
+  .diagram svg{display:block;border-radius:6px;margin:0 auto}
+  .diagram .cap{font-size:.78rem;color:var(--muted);margin-top:5px;max-width:190px}
+  .region-tag{font-size:12px;padding:2px 10px;border-radius:999px;vertical-align:2px;margin-left:8px;background:#eff6ff;color:#1e40af}
+
+  .foot{color:var(--muted);font-size:.8rem;margin-top:28px;border-top:1px solid var(--line);padding-top:12px;line-height:1.5}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <p class="back"><a href="/misc/">&larr; back</a></p>
+<header>
+  <nav>
+    <a href="/" style="margin-right:auto">Welcome</a>
+    <a href="/notes/">Notes</a>
+    <a href="/misc/">Miscellaneous</a>
+  </nav>
+</header>
+
+<main class="container">
   <h1>Go vs KataGo</h1>
-  <p class="sub">A real KataGo neural network running in your browser — no server, no search, just the raw policy.</p>
+  <p class="sub">A real KataGo neural network running in your browser — no server, no search, just the raw policy.
+    New to the game? <a href="#rules">Read the rules tutorial below</a>.</p>
 
   <div class="controls">
     <label>Board
@@ -56,13 +82,133 @@
         <option value="2">White</option>
       </select>
     </label>
-    <button id="new">New game</button>
+    <button class="primary" id="new">New game</button>
     <button id="pass">Pass</button>
     <button id="undo">Undo</button>
   </div>
 
   <div id="status">Loading neural network (~12 MB)&hellip;</div>
   <canvas id="board"></canvas>
+
+  <section id="rules">
+    <h2>How to play Go <span class="region-tag">tutorial</span></h2>
+
+    <div class="rule">
+      <h3>The board and the stones</h3>
+      <p>Two players take turns placing stones on the empty intersections of the grid — Black moves first.
+         Once placed, a stone never moves; it can only be captured and removed.
+         Instead of placing a stone you may always pass.</p>
+    </div>
+
+    <div class="rule">
+      <h3>Liberties and capture</h3>
+      <p>The empty points directly next to a stone (up, down, left, right) are its <em>liberties</em>.
+         Stones of the same color standing next to each other form a group and share their liberties.
+         When a group's last liberty is filled by the opponent, the whole group is captured and taken off the board.</p>
+      <div class="diagrams">
+        <div class="diagram">
+          <svg width="168" height="168" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A lone black stone with its four liberties marked">
+            <rect width="180" height="180" fill="#e9d8b0" rx="6"/>
+            <path d="M30 30H150M30 60H150M30 90H150M30 120H150M30 150H150M30 30V150M60 30V150M90 30V150M120 30V150M150 30V150" stroke="#8a6d3b" stroke-width="1" fill="none"/>
+            <circle cx="90" cy="90" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <g fill="none" stroke="#b91c1c" stroke-width="1.8">
+              <circle cx="60" cy="90" r="5"/><circle cx="120" cy="90" r="5"/>
+              <circle cx="90" cy="60" r="5"/><circle cx="90" cy="120" r="5"/>
+            </g>
+          </svg>
+          <div class="cap">A lone stone has four liberties (circled).</div>
+        </div>
+        <div class="diagram">
+          <svg width="168" height="168" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A white stone in atari with one liberty left, marked a">
+            <rect width="180" height="180" fill="#e9d8b0" rx="6"/>
+            <path d="M30 30H150M30 60H150M30 90H150M30 120H150M30 150H150M30 30V150M60 30V150M90 30V150M120 30V150M150 30V150" stroke="#8a6d3b" stroke-width="1" fill="none"/>
+            <circle cx="90" cy="90" r="13" fill="#fdfdfd" stroke="#94a3b8"/>
+            <circle cx="60" cy="90" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <text x="120" y="95" text-anchor="middle" font-size="14" font-weight="600" fill="#b91c1c">a</text>
+          </svg>
+          <div class="cap">White has one liberty left ("atari"). Black plays <b>a</b> and captures the stone.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Two forbidden moves: suicide and ko</h3>
+      <p><em>Suicide:</em> you may not place a stone that leaves its own group with zero liberties —
+         unless that move captures enemy stones first, which frees up liberties.</p>
+      <p><em>Ko:</em> after your stone is captured in a one-for-one exchange, you may not recapture
+         immediately — that would repeat the position forever. Play somewhere else first;
+         next turn the recapture is allowed again.</p>
+      <div class="diagrams">
+        <div class="diagram">
+          <svg width="168" height="168" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A ko shape: Black can capture the marked white stone at point a">
+            <rect width="180" height="180" fill="#e9d8b0" rx="6"/>
+            <path d="M30 30H150M30 60H150M30 90H150M30 120H150M30 150H150M30 30V150M60 30V150M90 30V150M120 30V150M150 30V150" stroke="#8a6d3b" stroke-width="1" fill="none"/>
+            <circle cx="60" cy="90" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="90" r="13" fill="#fdfdfd" stroke="#94a3b8"/>
+            <circle cx="120" cy="60" r="13" fill="#fdfdfd" stroke="#94a3b8"/>
+            <circle cx="120" cy="120" r="13" fill="#fdfdfd" stroke="#94a3b8"/>
+            <circle cx="150" cy="90" r="13" fill="#fdfdfd" stroke="#94a3b8"/>
+            <text x="120" y="95" text-anchor="middle" font-size="14" font-weight="600" fill="#b91c1c">a</text>
+          </svg>
+          <div class="cap">Ko: Black captures at <b>a</b>; White may not recapture until the next turn.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Life, death, and eyes</h3>
+      <p>A group that surrounds two separate empty points — two <em>eyes</em> — can never be captured:
+         the opponent would have to fill both eyes at once, and playing inside either one alone is suicide.
+         Making groups that can form two eyes, and preventing your opponent's groups from doing so,
+         is the heart of the game.</p>
+      <div class="diagrams">
+        <div class="diagram">
+          <svg width="168" height="168" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A black group with two eyes, marked e">
+            <rect width="180" height="180" fill="#e9d8b0" rx="6"/>
+            <path d="M30 30H150M30 60H150M30 90H150M30 120H150M30 150H150M30 30V150M60 30V150M90 30V150M120 30V150M150 30V150" stroke="#8a6d3b" stroke-width="1" fill="none"/>
+            <circle cx="30" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="60" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="120" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="150" cy="60" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="30" cy="90" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="90" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="150" cy="90" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="30" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="60" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="90" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="120" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="150" cy="120" r="13" fill="#1e293b" stroke="#0f172a"/>
+            <text x="60" y="95" text-anchor="middle" font-size="14" font-weight="600" fill="#b91c1c">e</text>
+            <text x="120" y="95" text-anchor="middle" font-size="14" font-weight="600" fill="#b91c1c">e</text>
+          </svg>
+          <div class="cap">Two eyes (<b>e</b>): White can never fill both, so this group is alive forever.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Ending the game and scoring</h3>
+      <p>When both players pass in succession, the game ends. This page uses <em>area scoring</em>:
+         your score is the number of empty points only your stones surround (your territory)
+         plus the number of your stones on the board. White receives 7.5 extra points
+         (<em>komi</em>) as compensation for moving second — the half point also rules out ties.
+         The higher total wins. Here the final score is estimated by the neural net.</p>
+    </div>
+
+    <div class="rule">
+      <h3>Tips for your first games</h3>
+      <p>Start on the 7×7 or 9×9 board — full 19×19 games are long and disorienting at first.
+         Corners are the easiest territory to hold, then the sides; the center is hardest.
+         Don't try to rescue every stone: sacrificing a stone or two to build a strong wall is often the better trade.
+         Stay out of atari, and use the Undo button freely — watching how KataGo punishes a move
+         is the fastest way to learn.</p>
+    </div>
+  </section>
 
   <p class="foot">
     Komi 7.5, area scoring (score estimated by the net — trust it within a point or two).
@@ -71,8 +217,9 @@
     g170 b10c128 by lightvector
     (<a href="https://katagotraining.org/network_license/" target="_blank" rel="noopener">CC0</a>),
     TF.js conversion via Y.&nbsp;Ichikawa / M.&nbsp;Korzh. UI &amp; engine written for this site.
+    <a href="/misc/">&larr; back to Miscellaneous</a>
   </p>
-</div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script>
