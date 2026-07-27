@@ -48,7 +48,7 @@
   input[type=range]:hover::-moz-range-thumb{background:#f5c369}
   input[type=range]:focus-visible{outline:1px solid var(--line2);outline-offset:2px;border-radius:8px}
   #canvasWrap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;
-    background:#000;width:min(100%, calc(100vh - 150px));aspect-ratio:1/1;margin:0 auto}
+    background:#000;width:min(100%, calc(100vh - 198px));aspect-ratio:1/1;margin:0 auto}
   @media (max-width:980px){ #canvasWrap{width:100%} }
   #view{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none;cursor:crosshair}
   #palette{display:flex;flex-direction:column;gap:7px;margin:2px 0 12px;align-items:flex-start}
@@ -61,7 +61,24 @@
   .chip:hover{border-color:var(--line2)}
   .chip.sel, button.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 0 10px rgba(232,176,76,.25)}
   .chip.broken{border-color:var(--err)}
-  #chart{display:block;width:100%;height:92px;margin-top:9px;border:1px solid var(--line);border-radius:8px;background:#0a0a11}
+  /* under the world: population chart on the left, life sliders on the right */
+  #lowerRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:9px}
+  @media (max-width:980px){ #lowerRow{grid-template-columns:1fr} }
+  #chart{display:block;width:100%;height:140px;border:1px solid var(--line);border-radius:8px;background:#0a0a11}
+  #lifeTune{height:140px;display:flex;flex-direction:column;overflow:hidden;
+    border:1px solid var(--line);border-radius:8px;background:#0a0a11}
+  .lt-head{display:flex;align-items:center;gap:8px;padding:5px 8px;flex:none;border-bottom:1px solid var(--line)}
+  .lt-ttl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)}
+  .lt-tabs{display:flex;gap:4px;flex-wrap:wrap}
+  .lt-tab{font-family:var(--mono);font-size:11px;color:var(--dim);background:transparent;
+    border:1px solid var(--line);border-radius:6px;padding:1px 8px;cursor:pointer}
+  .lt-tab:hover{border-color:var(--line2);color:var(--txt);background:transparent}
+  .lt-tab.sel{border-color:var(--accent);box-shadow:none}
+  .lt-body{flex:1;overflow-y:auto;padding:2px 9px 3px}
+  /* tight rows so a whole element's sliders fit without scrolling */
+  #lifeTune .tune-row{grid-template-columns:108px 1fr 36px;gap:7px;margin:1px 0;line-height:1.2}
+  #lifeTune .tune-row .nm,#lifeTune .tune-row .v{font-size:11px}
+  #lifeTune input[type=range]{height:12px}
   #inspect{color:var(--dim);font-size:11px;text-align:center;margin-top:6px;min-height:14px;font-variant-numeric:tabular-nums}
 
   /* --- editor column --- */
@@ -121,7 +138,16 @@
   <main>
     <section id="left">
       <div id="canvasWrap"><canvas id="view"></canvas></div>
-      <canvas id="chart"></canvas>
+      <div id="lowerRow">
+        <canvas id="chart"></canvas>
+        <div id="lifeTune">
+          <div class="lt-head">
+            <span class="lt-ttl">life</span>
+            <div id="ltTabs" class="lt-tabs"></div>
+          </div>
+          <div class="lt-body" id="lifeTuneBody"></div>
+        </div>
+      </div>
       <div id="inspect"></div>
     </section>
 
@@ -1585,6 +1611,7 @@ function selectElement(id) {
   setMsg(el.broken ? el.error : '', el.broken ? 'err' : '');
   if (el.broken) setRulesOpen(true);
   renderTuning(id);
+  renderLifeTune();   // a rule edit may have changed which elements are alive
   rebuildPalette();
 }
 /* fill a range input's track up to its current value */
@@ -1595,6 +1622,52 @@ function paintRange(inp) {
 function fmtTune(v, step) {
   const d = step >= 1 ? 0 : (String(step).split('.')[1] || '').length;
   return v.toFixed(d);
+}
+/* One slider row, shared by the element panel on the right and the life
+   panel under the chart. The same field can therefore be on screen twice,
+   so a change in one place pushes the new value to every other copy. */
+function tuneRow(id, key, cfg, base) {
+  const el = EL[id];
+  const row = document.createElement('div');
+  row.className = 'tune-row';
+  const nm = document.createElement('span');
+  nm.className = 'nm';
+  nm.textContent = cfg.label || key;
+  nm.title = key + (cfg.help ? ' — ' + cfg.help : '');
+  const inp = document.createElement('input');
+  inp.type = 'range';
+  inp.min = cfg.min; inp.max = cfg.max; inp.step = cfg.step;
+  inp.value = el.def[key];
+  inp.title = key;
+  inp.dataset.tune = id + ':' + key;
+  const v = document.createElement('span');
+  v.className = 'v';
+  v.textContent = fmtTune(+el.def[key], cfg.step);
+  const mark = () => { if (base) row.classList.toggle('changed', base[key] !== el.def[key]); };
+  mark();
+  paintRange(inp);
+  inp.addEventListener('input', () => {
+    el.def[key] = +inp.value;          // rules read this on the next tick
+    v.textContent = fmtTune(+inp.value, cfg.step);
+    paintRange(inp);
+    mark();
+    syncTune(id, key, +inp.value, inp);
+  });
+  row.append(nm, inp, v);
+  return row;
+}
+function syncTune(id, key, value, from) {
+  for (const o of document.querySelectorAll('input[data-tune="' + id + ':' + key + '"]')) {
+    if (o === from) continue;
+    o.value = value;
+    paintRange(o);
+    const cell = o.parentElement.querySelector('.v');
+    if (cell) cell.textContent = from.parentElement.querySelector('.v').textContent;
+    o.parentElement.classList.toggle('changed', from.parentElement.classList.contains('changed'));
+  }
+}
+function tuneBase(el) {
+  try { return compileSource(el.src); } catch (e) { return null; }   // mid-edit
 }
 function renderTuning(id) {
   const el = EL[id], body = $('tuneBody'), sub = $('tuneSub');
@@ -1608,36 +1681,35 @@ function renderTuning(id) {
     return;
   }
   sub.textContent = 'drag to change behaviour — live';
-  let base = null;
-  try { base = compileSource(el.src); } catch (e) { /* editing in progress */ }
-  for (const key of Object.keys(spec)) {
-    const cfg = spec[key];
-    const row = document.createElement('div');
-    row.className = 'tune-row';
-    const nm = document.createElement('span');
-    nm.className = 'nm';
-    nm.textContent = cfg.label || key;
-    nm.title = key + (cfg.help ? ' — ' + cfg.help : '');
-    const inp = document.createElement('input');
-    inp.type = 'range';
-    inp.min = cfg.min; inp.max = cfg.max; inp.step = cfg.step;
-    inp.value = el.def[key];
-    inp.title = key;
-    const v = document.createElement('span');
-    v.className = 'v';
-    v.textContent = fmtTune(+el.def[key], cfg.step);
-    const mark = () => { if (base) row.classList.toggle('changed', base[key] !== el.def[key]); };
-    mark();
-    paintRange(inp);
-    inp.addEventListener('input', () => {
-      el.def[key] = +inp.value;          // rules read this on the next tick
-      v.textContent = fmtTune(+inp.value, cfg.step);
-      paintRange(inp);
-      mark();
-    });
-    row.append(nm, inp, v);
-    body.appendChild(row);
+  const base = tuneBase(el);
+  for (const key of Object.keys(spec)) body.appendChild(tuneRow(id, key, spec[key], base));
+}
+
+/* the compact life panel beside the chart: tabs for every element in the
+   "life" group, so the animals can be steered without leaving the world */
+let lifeTab = null;
+function renderLifeTune() {
+  const tabs = $('ltTabs'), body = $('lifeTuneBody');
+  tabs.innerHTML = ''; body.innerHTML = '';
+  const ids = [];
+  EL.forEach((el, id) => { if (el.def && el.def.group === 'life') ids.push(id); });
+  if (!ids.length) { body.innerHTML = '<div class="tune-none">no living elements</div>'; return; }
+  if (lifeTab === null || !ids.includes(lifeTab)) lifeTab = ids[0];
+  for (const id of ids) {
+    const b = document.createElement('button');
+    b.className = 'lt-tab' + (id === lifeTab ? ' sel' : '');
+    b.textContent = EL[id].name.toLowerCase();
+    b.style.color = id === lifeTab ? 'rgb(' + EL[id].rgb.join(',') + ')' : '';
+    b.addEventListener('click', () => { lifeTab = id; renderLifeTune(); });
+    tabs.appendChild(b);
   }
+  const el = EL[lifeTab], spec = el.def && el.def.tune;
+  if (!spec || !Object.keys(spec).length) {
+    body.innerHTML = '<div class="tune-none">' + el.name + ' has no tunable numbers.</div>';
+    return;
+  }
+  const base = tuneBase(el);
+  for (const key of Object.keys(spec)) body.appendChild(tuneRow(lifeTab, key, spec[key], base));
 }
 
 function setMsg(text, cls) {
