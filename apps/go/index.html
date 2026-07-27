@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go vs KataGo</title>
+<!--
+  Play Go against a real KataGo neural network, entirely in the browser.
+  Neural network: KataGo "g170" run, b10c128-s1141046784-d204142634 (CC0 / public
+  domain, see https://katagotraining.org/network_license/) by David J Wu (lightvector).
+  TensorFlow.js conversion of the net via Yuji Ichikawa / Maksim Korzh.
+  Board UI, rules engine, and feature encoding written for this site (2026).
+  The net plays its raw policy (no tree search) — roughly dan-level strength.
+-->
+<style>
+  :root { --fg:#0f172a; --muted:#475569; --link:#2563eb; --bg:#ffffff; --card:#f8fafc; --line:#e2e8f0; }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--fg);background:var(--bg)}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  .controls label{font-size:.88rem;color:var(--muted)}
+  select,button{font:inherit;font-size:.9rem;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--fg);cursor:pointer}
+  button:hover:not(:disabled){border-color:#cbd5e1;color:var(--link)}
+  button:disabled{opacity:.45;cursor:default}
+  #status{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.92rem;margin-bottom:12px;min-height:38px}
+  #board{display:block;width:100%;max-width:640px;margin:0 auto;border-radius:6px;touch-action:manipulation}
+  .foot{color:var(--muted);font-size:.8rem;margin-top:16px;line-height:1.5}
+  .foot a{color:var(--link);text-decoration:none}
+  .foot a:hover{text-decoration:underline}
+  .back{font-size:.88rem;margin-bottom:10px}
+  .back a{color:var(--muted);text-decoration:none}
+  .back a:hover{color:var(--link)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="back"><a href="/misc/">&larr; back</a></p>
+  <h1>Go vs KataGo</h1>
+  <p class="sub">A real KataGo neural network running in your browser — no server, no search, just the raw policy.</p>
+
+  <div class="controls">
+    <label>Board
+      <select id="size">
+        <option value="7">7×7</option>
+        <option value="9" selected>9×9</option>
+        <option value="13">13×13</option>
+        <option value="16">16×16</option>
+        <option value="19">19×19</option>
+      </select>
+    </label>
+    <label>You play
+      <select id="color">
+        <option value="1" selected>Black</option>
+        <option value="2">White</option>
+      </select>
+    </label>
+    <button id="new">New game</button>
+    <button id="pass">Pass</button>
+    <button id="undo">Undo</button>
+  </div>
+
+  <div id="status">Loading neural network (~12 MB)&hellip;</div>
+  <canvas id="board"></canvas>
+
+  <p class="foot">
+    Komi 7.5, area scoring (score estimated by the net — trust it within a point or two).
+    The bare policy net is roughly dan-level but reads no ladders; it may occasionally misplay them.<br>
+    Neural net: <a href="https://github.com/lightvector/KataGo" target="_blank" rel="noopener">KataGo</a>
+    g170 b10c128 by lightvector
+    (<a href="https://katagotraining.org/network_license/" target="_blank" rel="noopener">CC0</a>),
+    TF.js conversion via Y.&nbsp;Ichikawa / M.&nbsp;Korzh. UI &amp; engine written for this site.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script>
+'use strict';
+/* ---------------- Rules engine ---------------- */
+const EMPTY=0, BLACK=1, WHITE=2;
+const KOMI = 7.5;
+
+function Game(N){
+  this.N=N; this.board=new Uint8Array(N*N); this.turn=BLACK;
+  this.koPoint=-1; this.history=[]; this.caps={1:0,2:0}; this.over=false;
+}
+Game.prototype.idx=function(x,y){return y*this.N+x;};
+Game.prototype.neighbors=function(i){
+  const N=this.N,x=i%N,y=(i-x)/N,r=[];
+  if(x>0)r.push(i-1); if(x<N-1)r.push(i+1);
+  if(y>0)r.push(i-N); if(y<N-1)r.push(i+N);
+  return r;
+};
+// flood-fill the group containing i; returns {stones:[...], libs:Set}
+Game.prototype.group=function(i,board){
+  board=board||this.board;
+  const color=board[i], stones=[i], libs=new Set(), seen=new Set([i]);
+  const stack=[i];
+  while(stack.length){
+    const s=stack.pop();
+    for(const n of this.neighbors(s)){
+      if(board[n]===EMPTY) libs.add(n);
+      else if(board[n]===color && !seen.has(n)){ seen.add(n); stones.push(n); stack.push(n); }
+    }
+  }
+  return {stones,libs};
+};
+// try move; returns {captured:[...]} or null if illegal
+Game.prototype.tryMove=function(i,color){
+  if(this.over||this.board[i]!==EMPTY||i===this.koPoint) return null;
+  const b=Uint8Array.from(this.board), opp=3-color;
+  b[i]=color;
+  let captured=[];
+  for(const n of this.neighbors(i)){
+    if(b[n]===opp){
+      const g=this.group(n,b);
+      if(g.libs.size===0 && b[g.stones[0]]===opp){
+        for(const s of g.stones){ b[s]=EMPTY; captured.push(s); }
+      }
+    }
+  }
+  if(this.group(i,b).libs.size===0) return null;  // suicide
+  return {board:b,captured};
+};
+Game.prototype.play=function(i){
+  const color=this.turn, res=this.tryMove(i,color);
+  if(!res) return false;
+  const rec={i,pass:false,color,prevKo:this.koPoint,captured:res.captured};
+  this.board.set(res.board);
+  this.caps[color]+=res.captured.length;
+  // simple ko: single capture and the new stone's group is one stone with one liberty
+  this.koPoint=-1;
+  if(res.captured.length===1){
+    const g=this.group(i);
+    if(g.stones.length===1&&g.libs.size===1) this.koPoint=res.captured[0];
+  }
+  this.history.push(rec); this.turn=3-this.turn;
+  return true;
+};
+Game.prototype.pass=function(){
+  if(this.over) return;
+  this.history.push({i:-1,pass:true,color:this.turn,prevKo:this.koPoint,captured:[]});
+  this.koPoint=-1; this.turn=3-this.turn;
+  const h=this.history;
+  if(h.length>=2&&h[h.length-1].pass&&h[h.length-2].pass) this.over=true;
+};
+Game.prototype.undo=function(){
+  const rec=this.history.pop();
+  if(!rec) return;
+  this.over=false; this.turn=rec.color; this.koPoint=rec.prevKo;
+  if(!rec.pass){
+    this.board[rec.i]=EMPTY;
+    this.caps[rec.color]-=rec.captured.length;
+    for(const s of rec.captured) this.board[s]=3-rec.color;
+  }
+};
+Game.prototype.legalMoves=function(){
+  const out=[];
+  for(let i=0;i<this.N*this.N;i++) if(this.tryMove(i,this.turn)) out.push(i);
+  return out;
+};
+
+/* ---------------- KataGo feature encoder ----------------
+   22 spatial channels on a fixed 19x19 grid (NHWC [1,361,22]), 19 globals.
+   The board occupies the top-left NxN corner; channel 0 is the on-board mask —
+   this is how one net plays every size from 7x7 to 19x19. */
+const T=19, SPATIAL=T*T, CH=22, GLOB=19;
+function encode(game){
+  const N=game.N, P=game.turn, O=3-P;
+  const bin=new Float32Array(SPATIAL*CH), glob=new Float32Array(GLOB);
+  const libsOf=new Int16Array(N*N); // liberties of each stone's group
+  const seen=new Uint8Array(N*N);
+  for(let i=0;i<N*N;i++){
+    if(game.board[i]!==EMPTY&&!seen[i]){
+      const g=game.group(i), L=g.libs.size;
+      for(const s of g.stones){ seen[s]=1; libsOf[s]=L; }
+    }
+  }
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const i=y*N+x, s=y*T+x, c=game.board[i];
+    bin[s*CH+0]=1;
+    if(c===P) bin[s*CH+1]=1;
+    if(c===O) bin[s*CH+2]=1;
+    if(c!==EMPTY){
+      if(libsOf[i]===1) bin[s*CH+3]=1;
+      else if(libsOf[i]===2) bin[s*CH+4]=1;
+      else if(libsOf[i]===3) bin[s*CH+5]=1;
+    }
+  }
+  if(game.koPoint>=0){
+    const x=game.koPoint%N, y=(game.koPoint-x)/N;
+    bin[(y*T+x)*CH+6]=1;
+  }
+  // last five moves: channels 9..13 (most recent first); passes set globals 0..4
+  const h=game.history;
+  for(let k=0;k<5;k++){
+    const m=h[h.length-1-k];
+    if(!m) break;
+    if(m.pass) glob[k]=1;
+    else{
+      const x=m.i%N, y=(m.i-x)/N;
+      bin[(y*T+x)*CH+(9+k)]=1;
+    }
+  }
+  const selfKomi=(P===WHITE?KOMI:-KOMI);
+  glob[5]=selfKomi/20.0;
+  return {bin,glob};
+}
+
+/* ---------------- Neural net ---------------- */
+let model=null;
+// NOTE: the model also has a value_output (win/loss) head, but in this TF.js
+// conversion it misbehaves whenever selfKomi is positive (White to move) with
+// zeroed rules flags — verified by a komi-input sweep. The lead head below is
+// reliable, so we display score lead only and don't fetch the value head.
+const OUT=['swa_model/policy_output','swa_model/miscvalues_output'];
+async function loadModel(){
+  let ok=false;
+  try{ ok=await tf.setBackend('webgl'); }catch(e){ ok=false; }
+  if(!ok) await tf.setBackend('cpu');
+  model=await tf.loadGraphModel('./model/b10c128/model.json');
+  // warm-up
+  await runNet(new Game(9));
+}
+async function runNet(game){
+  const {bin,glob}=encode(game);
+  const bt=tf.tensor3d(bin,[1,SPATIAL,CH]), gt=tf.tensor2d(glob,[1,GLOB]);
+  const res=await model.executeAsync(
+    {'swa_model/bin_inputs':bt,'swa_model/global_inputs':gt}, OUT);
+  const policy2=await res[0].data();      // [2,362] — channel 0 is the move policy
+  const misc=await res[1].data();         // [10]: [scoreMean, scoreStdev, lead, vtime, td-values...] all /20-scaled
+  bt.dispose(); gt.dispose(); res.forEach(t=>t.dispose());
+  return {policy:policy2.slice(0,362),misc};
+}
+// predicted final score lead (komi included) for the side to move — the net's trained "lead" head
+function scoreSelf(net){
+  return net.misc[2]*20;
+}
+
+/* ---------------- App state & AI ---------------- */
+let game=new Game(9), humanColor=BLACK, thinking=false, epoch=0, lastUserCaps=0;
+const statusEl=document.getElementById('status');
+function colorName(c){return c===BLACK?'Black':'White';}
+function setStatus(html){statusEl.innerHTML=html;}
+
+async function aiMove(){
+  if(game.over||model===null||thinking) return;
+  // snapshot the game this computation belongs to; abort if a New game/Undo
+  // happens while the net is running (otherwise a stale move could appear)
+  const myEpoch=epoch, myGame=game;
+  thinking=true;
+  try{
+  setStatus('KataGo is thinking&hellip;');
+  await new Promise(r=>setTimeout(r,30)); // let the UI paint
+  const net=await runNet(myGame);
+  if(epoch!==myEpoch||game!==myGame||myGame.over||myGame.turn===humanColor) return;
+  const legal=game.legalMoves();
+  // rank legal moves by policy; index 361 is pass
+  const cand=legal.map(i=>{
+    const x=i%game.N,y=(i-x)/game.N;
+    return {i,p:net.policy[y*T+x]};
+  }).sort((a,b)=>b.p-a.p);
+  const passP=net.policy[361];
+  let pick=null;
+  if(cand.length===0||passP>cand[0].p) pick=-1;
+  else if(game.history.length<6&&cand.length>2&&Math.random()<0.8)
+    pick=cand[Math.floor(Math.random()*Math.min(3,cand.length))].i; // vary openings
+  else pick=cand[0].i;
+
+  // score estimate from the perspective of the side to move right now (the AI)
+  const lead=scoreSelf(net);
+  const aiC=colorName(game.turn), huC=colorName(3-game.turn);
+  const leadTxt=(lead>0?aiC:huC)+' leads by ~'+Math.abs(lead).toFixed(1)+' points';
+
+  let aiCaps=0;
+  if(pick<0) game.pass();
+  else{ game.play(pick); aiCaps=game.history[game.history.length-1].captured.length; }
+  draw();
+  // narrate captures so removals are never mysterious
+  const capsTxt=(lastUserCaps?('You captured '+lastUserCaps+' stone'+(lastUserCaps>1?'s':'')+'. '):'')
+               +(aiCaps?('KataGo captured '+aiCaps+' stone'+(aiCaps>1?'s':'')+'. '):'');
+  lastUserCaps=0;
+  if(game.over) endGame(lead,aiC,huC);
+  else setStatus((pick<0?'KataGo passes. ':'')+capsTxt+'Your move ('+colorName(game.turn)+'). '+leadTxt);
+  }catch(e){
+    console.error(e);
+    setStatus('KataGo hit an error — '+e.message);
+  }finally{
+    // only clear the flag if this computation still owns the current game
+    // (a stale finally must not unlock a newer game's in-flight AI turn)
+    if(epoch===myEpoch&&game===myGame) thinking=false;
+  }
+}
+// lead is from `side`'s perspective (the side to move when the net was run)
+function endGame(lead,side,other){
+  let msg='Game over. ';
+  if(lead!==null&&lead!==undefined)
+    msg+='Estimated result: '+(lead>0?side:other)+' + '+Math.abs(lead).toFixed(1);
+  setStatus(msg+' &middot; press New game to play again');
+}
+
+/* ---------------- Board drawing ---------------- */
+const canvas=document.getElementById('board'), ctx=canvas.getContext('2d');
+function hoshi(N){
+  if(N===19) return [3,9,15].flatMap(a=>[3,9,15].map(b=>[a,b]));
+  if(N===13) return [[3,3],[9,3],[6,6],[3,9],[9,9]];
+  if(N===9)  return [[2,2],[6,2],[4,4],[2,6],[6,6]];
+  if(N===16) return [[3,3],[12,3],[3,12],[12,12]];
+  if(N===7)  return [[3,3]];
+  return [];
+}
+function draw(){
+  const N=game.N;
+  const cssW=Math.min(640,canvas.parentElement.clientWidth);
+  const dpr=window.devicePixelRatio||1;
+  canvas.style.height=cssW+'px';
+  canvas.width=cssW*dpr; canvas.height=cssW*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cell=cssW/(N+1), r=cell*0.47;
+  ctx.fillStyle='#e9d8b0'; ctx.fillRect(0,0,cssW,cssW);
+  ctx.strokeStyle='#8a6d3b'; ctx.lineWidth=1;
+  for(let k=0;k<N;k++){
+    const p=cell*(k+1);
+    ctx.beginPath(); ctx.moveTo(cell,p); ctx.lineTo(cell*N,p); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p,cell); ctx.lineTo(p,cell*N); ctx.stroke();
+  }
+  ctx.fillStyle='#8a6d3b';
+  for(const [hx,hy] of hoshi(N)){
+    ctx.beginPath(); ctx.arc(cell*(hx+1),cell*(hy+1),2.5,0,7); ctx.fill();
+  }
+  const last=game.history.length?game.history[game.history.length-1]:null;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const c=game.board[y*N+x];
+    if(c===EMPTY) continue;
+    const px=cell*(x+1),py=cell*(y+1);
+    ctx.beginPath(); ctx.arc(px,py,r,0,7);
+    ctx.fillStyle=c===BLACK?'#1e293b':'#fdfdfd'; ctx.fill();
+    ctx.strokeStyle=c===BLACK?'#0f172a':'#94a3b8'; ctx.lineWidth=1; ctx.stroke();
+    if(last&&!last.pass&&last.i===y*N+x){
+      // last-move marker: ring outline (standard Go convention)
+      ctx.beginPath(); ctx.arc(px,py,r*0.5,0,7);
+      ctx.strokeStyle=c===BLACK?'#e9d8b0':'#64748b'; ctx.lineWidth=1.8; ctx.stroke();
+    }
+  }
+}
+canvas.addEventListener('click',ev=>{
+  if(thinking||game.over||model===null||game.turn!==humanColor) return;
+  const rect=canvas.getBoundingClientRect();
+  const N=game.N, cell=rect.width/(N+1);
+  const x=Math.round((ev.clientX-rect.left)/cell)-1;
+  const y=Math.round((ev.clientY-rect.top)/cell)-1;
+  if(x<0||y<0||x>=N||y>=N) return;
+  if(!game.play(y*N+x)) return;
+  lastUserCaps=game.history[game.history.length-1].captured.length;
+  draw();
+  aiMove();
+});
+
+/* ---------------- Controls ---------------- */
+function newGame(){
+  epoch++; thinking=false;   // cancel any in-flight AI computation
+  game=new Game(parseInt(document.getElementById('size').value,10));
+  humanColor=parseInt(document.getElementById('color').value,10);
+  draw();
+  if(model===null){ setStatus('Loading neural network (~12 MB)&hellip;'); return; }
+  if(game.turn!==humanColor) aiMove();
+  else setStatus('Your move ('+colorName(humanColor)+'). Komi '+KOMI+'.');
+}
+document.getElementById('new').addEventListener('click',newGame);
+// changing board size or color takes effect immediately (starts a fresh game)
+document.getElementById('size').addEventListener('change',newGame);
+document.getElementById('color').addEventListener('change',newGame);
+document.getElementById('pass').addEventListener('click',async()=>{
+  if(thinking||game.over||game.turn!==humanColor) return;
+  game.pass(); draw();
+  if(game.over){
+    const myEpoch=epoch;
+    const net=await runNet(game); // side to move now = the AI
+    if(epoch!==myEpoch) return;
+    endGame(scoreSelf(net),colorName(game.turn),colorName(3-game.turn));
+  }
+  else aiMove();
+});
+document.getElementById('undo').addEventListener('click',()=>{
+  if(thinking||!game.history.length) return;
+  game.undo();
+  while(game.history.length&&game.turn!==humanColor) game.undo();
+  draw(); setStatus('Your move ('+colorName(game.turn)+').');
+});
+window.addEventListener('resize',draw);
+
+/* ---------------- Boot ---------------- */
+// small debug handle for automated testing
+window.__goDebug=function(){
+  return {N:game.N,turn:game.turn,over:game.over,thinking,modelReady:model!==null,
+          hist:game.history.map(m=>m.pass?'pass':m.i),
+          board:Array.from(game.board),
+          stones:Array.from(game.board).filter(v=>v!==0).length};
+};
+draw();
+loadModel().then(()=>{ newGame(); })
+  .catch(e=>{ console.error(e); setStatus('Failed to load the neural network — '+e.message); });
+</script>
+</body>
+</html>
