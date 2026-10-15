@@ -11,7 +11,7 @@ title: Welcome
   <div>
     <h1>Ruihua Fan</h1>
     <p>
-      Hello! I am a theorist, currently a research scientist at Periodic Labs. I like emergent phenomena in nature.
+      Hello! I am a condensed matter theorist and like emergent phenomena in nature. I am now interested in understanding real-world materials, especially superconducting ones, and I currently work at Periodic Labs as a research scientist.
     </p>
     <p>  
       You can find my papers on
