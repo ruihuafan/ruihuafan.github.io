@@ -11,7 +11,7 @@ title: Welcome
   <div>
     <h1>Ruihua Fan</h1>
     <p>
-      Hello! I am a theorist, currently a Moore fellow at UC Berkeley. I like emergent phenomena in nature.
+      Hello! I am a theorist, currently a research scientist at Periodic Labs. I like emergent phenomena in nature.
     </p>
     <p>  
       You can find my papers on
@@ -31,8 +31,12 @@ title: Welcome
 <div class="card">
   <ul>
     <li>
+      <strong>Periodic Labs</strong><br>
+      Research scientist, Oct 2026 — current
+    </li>
+    <li>
       <strong>University of California, Berkeley</strong><br>
-      Moore fellow, Aug 2023 — current
+      Moore fellow, Aug 2023 — Sep 2026
     </li>
     <li>
       <strong>Harvard University</strong><br>
