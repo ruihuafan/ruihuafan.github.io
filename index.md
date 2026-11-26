@@ -19,9 +19,6 @@ title: Welcome
       or my
       <a href="https://scholar.google.com/citations?user=s8Vgp_UAAAAJ" target="_blank" rel="noopener">Google Scholar</a>.
     </p>
-    <p>
-      Email: ruihua_fan AT berkeley.edu
-    </p>
   </div>
 </div>
 
